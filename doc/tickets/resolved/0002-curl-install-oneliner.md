@@ -2,7 +2,7 @@
 title: GitHub Releases の artifact を curl ワンライナーで導入する手順を整備
 type: enhancement
 priority: medium
-status: ready-to-apply
+status: resolved
 created: 2026-07-14
 updated: 2026-07-14
 ---
