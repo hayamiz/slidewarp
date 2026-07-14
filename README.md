@@ -13,6 +13,26 @@
 
 ## インストール / ビルド
 
+### ビルド不要（curl ワンライナー）
+
+ビルド済みバイナリを GitHub Releases から取得して導入します。
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/hayamiz/slidewarp/master/scripts/install.sh | sh
+```
+
+- **対応プラットフォーム**: Linux x86_64 / macOS arm64 (Apple Silicon) / macOS x86_64 (Intel)。
+- **既定インストール先**: `~/.local/bin`（PATH に無ければ shell 別の追記コマンドを案内）。
+- **Linux x86_64 は既定で musl 静的バイナリ**（依存なし）。
+- 環境変数で上書き可能:
+  - `SLIDEWARP_VERSION`: バージョン固定（既定 latest。例 `SLIDEWARP_VERSION=v1.2.3`）
+  - `SLIDEWARP_INSTALL_DIR`: インストール先（既定 `~/.local/bin`）
+  - `SLIDEWARP_TARGET`: target 明示上書き（例 glibc 版が要るとき
+    `SLIDEWARP_TARGET=x86_64-unknown-linux-gnu`）
+- **aarch64 の Linux と Windows は非対応**です。下記の `cargo` ビルドを使ってください。
+
+### ソースからビルド（Rust）
+
 ```bash
 # Rust 版（本体）
 cargo build --release
