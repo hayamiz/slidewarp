@@ -2,7 +2,7 @@
 title: docs/tech-stack.md を現在の採用状況に合わせて更新
 type: docs
 priority: medium
-status: ready-to-apply
+status: resolved
 created: 2026-07-14
 updated: 2026-07-14
 ---
