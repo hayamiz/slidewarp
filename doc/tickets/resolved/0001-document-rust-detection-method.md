@@ -2,7 +2,7 @@
 title: Rust版のスライド領域認識方式をドキュメント化する
 type: docs
 priority: medium
-status: ready-to-apply
+status: resolved
 created: 2026-07-14
 updated: 2026-07-14
 ---
