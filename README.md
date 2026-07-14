@@ -22,6 +22,34 @@ cargo build --release
 ./target/release/slidewarp ./input-samples -o ./out
 ```
 
+### musl 静的バイナリのビルド・検証（リリースと同じ完全静的版）
+
+GitHub Releases の Linux バイナリは **musl でリンクした依存ゼロの完全静的版**（glibc
+バージョンを問わずどこでも動く）。手元で同じものをビルド・検証するには、musl ターゲットと
+**musl 用の C ツールチェーン**が要る（アロケータの `mimalloc` が C コードを `cc` で
+コンパイルするため、`cc` だけでなく musl 向けの C コンパイラが必要）。
+
+```bash
+# 1. Rust の musl ターゲットを追加
+rustup target add x86_64-unknown-linux-musl
+
+# 2. musl 用 C ツールチェーンを導入（mimalloc の C ビルドに必要）
+sudo apt-get install musl-tools      # Debian/Ubuntu（musl-gcc を提供）
+# apk add musl-dev gcc               # Alpine の場合
+
+# 3. musl 静的バイナリをビルド
+cargo build --release --target x86_64-unknown-linux-musl
+# → target/x86_64-unknown-linux-musl/release/slidewarp
+
+# 4. 完全静的か確認（下記のように出れば OK）
+ldd  target/x86_64-unknown-linux-musl/release/slidewarp   # → "not a dynamic executable"
+file target/x86_64-unknown-linux-musl/release/slidewarp   # → "statically linked"
+```
+
+> ネイティブ（glibc）版で十分なら手順 1〜2 は不要で `cargo build --release` だけでよい。
+> `musl-tools` を入れずに musl ターゲットをビルドすると、mimalloc の C ビルドが
+> C コンパイラ不在で失敗する点に注意。
+
 ## 使い方
 
 ```bash
