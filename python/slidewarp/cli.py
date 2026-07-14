@@ -56,8 +56,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--jpeg-quality", type=int, default=95, help="JPEG 品質(1-100)")
     p.add_argument("-j", "--jobs", type=int, default=0,
                    help="並列数（0で自動: CPU数）。1で逐次実行")
-    p.add_argument("--no-report", action="store_true",
-                   help="評価用 report.html を生成しない（既定は生成する）")
+    p.add_argument("--report", action="store_true",
+                   help="評価用 report.html を生成する（既定は生成しない）")
     p.add_argument("-V", "--version", action="version", version=f"slidewarp {__version__}")
     return p
 
@@ -128,7 +128,7 @@ def main(argv: list[str] | None = None) -> int:
     print("---")
     print("集計: " + ", ".join(f"{k}={v}" for k, v in sorted(counts.items())))
 
-    if not args.no_report:
+    if args.report:
         report_path = report_mod.write_report(
             results, cfg, cfg.out_dir,
             opts={"exposure": args.exposure, "color": args.color,

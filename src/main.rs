@@ -71,9 +71,9 @@ struct Args {
     /// 並列数（0で自動）
     #[arg(short = 'j', long, default_value_t = 0)]
     jobs: usize,
-    /// 評価用 report.html を生成しない
+    /// 評価用 report.html を生成する（既定は生成しない）
     #[arg(long)]
-    no_report: bool,
+    report: bool,
     /// デバッグ: 各画像の幾何（見かけ/復元アスペクト・persp・決定比）を出力して終了
     #[arg(long)]
     dump_geom: bool,
@@ -296,7 +296,7 @@ fn main() {
     println!("---");
     println!("集計: {}", counts.iter().map(|(k, v)| format!("{k}={v}")).collect::<Vec<_>>().join(", "));
 
-    if !args.no_report {
+    if args.report {
         let items: Vec<report::Item> = results
             .iter()
             .enumerate()

@@ -48,7 +48,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **切り出しは検出矩形を各辺 3% 外へ広げてから行う**（`warp` の `margin` 既定 0.03、`--margin`
   で調整）。トリミング後の画像だけでスライド全体が収まっているか判断できるよう周辺マージンを
   少し含める。出力アスペクト/サイズは元 quad 基準（マージン拡大の影響を受けない）。両版共通。
-- 処理後は `out/report.html`（評価用レビューUI）を既定で生成（`--no-report` で抑止）。
+- 処理後の `out/report.html`（評価用レビューUI）は **`--report` を渡したときだけ生成**（既定は非生成）。
 
 ### 検出の設計要点（Rust: `src/detect.rs` / Python: `python/slidewarp/detect.py`。両版で同一思想）
 > **⚠ Rust 実装の認識方式の詳細（一次情報源＝ソースに即した解説）は
@@ -139,10 +139,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   ```bash
   # Rust 本体（リポジトリ直下で）
   cargo build --release && rm -rf eval-output && \
-    ./target/release/slidewarp input-samples -o eval-output/ --on-low-confidence copy
+    ./target/release/slidewarp input-samples -o eval-output/ --on-low-confidence copy --report
   # Python 実験版（python/ 内で）
   cd python && rm -rf eval-output && \
-    uv run slidewarp ../input-samples -o eval-output/ --on-low-confidence copy
+    uv run slidewarp ../input-samples -o eval-output/ --on-low-confidence copy --report
   ```
   生成後 `eval-output/report.html` をブラウザで開いて人手評価する（評価JSON/CSVも出力可）。
 

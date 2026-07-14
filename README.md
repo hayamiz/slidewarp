@@ -88,10 +88,11 @@ slidewarp --help
 
 主なオプション: `--margin`（周辺マージン, 既定 0.03）, `--sharpen`, `--exposure`,
 `--color`, `--min-confidence`, `--on-low-confidence`, `--max-long-side`, `-j/--jobs`,
-`--no-report`。
+`--report`。
 
-処理後、出力ディレクトリの `report.html` をブラウザで開くと、元画像／処理後を並べて
-人手評価（切り出し位置・見た目を 1〜5 で採点、コメント、JSON/CSV 入出力、全消去）できます。
+`--report` を渡すと、出力ディレクトリに `report.html` を生成します（既定は非生成）。
+ブラウザで開くと、元画像／処理後を並べて人手評価（切り出し位置・見た目を 1〜5 で採点、
+コメント、JSON/CSV 入出力、全消去）できます。
 
 ## 主な特徴（検出アルゴリズム）
 
