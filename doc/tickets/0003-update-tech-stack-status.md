@@ -2,7 +2,7 @@
 title: docs/tech-stack.md を現在の採用状況に合わせて更新
 type: docs
 priority: medium
-status: open
+status: ready-to-apply
 created: 2026-07-14
 updated: 2026-07-14
 ---
@@ -88,3 +88,41 @@ updated: 2026-07-14
 - **自己矛盾の回避**: §0 冒頭に「以降の §1〜§6 は選定検討時の記録。未決定事項は §0 で解決済み」と
   明記し、§6 の未チェック箇条書きと §0 の齟齬を枠付けで吸収する（§6 本文自体は書き換えない）。
 - **スコープ**: 変更は `docs/tech-stack.md` のみ。`CLAUDE.md`/`Cargo.toml`/`README.md` は裏取り用の参照で非編集。
+
+## Resolution
+
+構造方針＝案Aで `docs/tech-stack.md` を更新した。変更は同ファイル1つのみ（40行追加・0行削除）。
+
+### 追加した §0「現在の採用状況（本文は検討経緯として保存）」の要点
+- 冒頭に「§0 が現在の実採用の正。§1〜§6 は選定検討時の記録で、§6 の未決定事項含め当時未確定の
+  論点はすべて §0 で解決済み」と明記し、本文との齟齬を枠付けで吸収。
+- 採用スタック: 純Rust（`image` + `imageproc`）、OpenCV 非依存の単一バイナリ（musl 静的リンク）。
+  `opencv` crate 不使用＝§4 本命の選択肢B は不採用、実採用は選択肢D 寄り。
+- ML 未導入（`ort` 不使用）、classical 幾何処理を自作。§3(d)/選択肢D の「工数最大・品質リスク最大」
+  評価に対し、実績は手元 24 枚で人手評価ほぼ全て良好まで到達。
+- Python（`python/`）は実験用併存。認識アルゴリズムは Rust 本体が正、Rust 未移植の
+  `--remove-people` のみ Python 実装。
+- §6 の未決定事項の解決を集約（主軸=純Rust / classical 開始・`ort` 未導入 / 検出失敗時は
+  `--on-low-confidence`＋レビュー用フォルダ＋report.html）。命名規則・JSON サイドカーの要否は
+  「実装準拠」とし断定せず。
+- §4 冒頭に1行の注記（「本節の推奨は検討当時のもの。実採用は §0 参照」）のみ追加。§4 本文のロジックは非改変。
+
+### 裏取り結果（`Cargo.toml`）
+- `[dependencies]` = image / imageproc / rayon / clap / serde / serde_json / anyhow / walkdir /
+  mimalloc のみ。`opencv` crate も `ort` も**不在**。§0 の主張と一致。CLAUDE.md の現状記述とも矛盾なし。
+
+### 検証結果
+- `git diff --numstat` = 40 insertions / 0 deletions（§1〜§6 の本文は原文のまま保持、削除行なし）。
+- 見出し階層は `## 0.` → `## 1.` … `## 6.` の番号順を確認。既存リンク（§3 の crates.io 等）は非改変。
+- コード非変更のため cargo build は不要。
+
+### 評価者による独立レビュー
+- Evaluator: PASS — Sonnet 評価者（ticket:ticket-evaluator）。Codex CLI は本セッションで 401
+  Unauthorized（未認証）を確認済みのためフォールバック。評価者は §0 の全事実を独立に裏取り:
+  `Cargo.toml` の依存（image/imageproc 有・opencv/ort 無）、`--remove-people` が `python/` のみで
+  `src/*.rs` に無いこと、`--on-low-confidence` 既定=skip（main.rs:57）、`report.html`/`--no-report`、
+  musl ターゲット（release.yml）を確認。`git diff --numstat` = 40 insertions / 0 deletions で §1〜§6
+  本文の非改変、hunk が §0 挿入と §4 1行注記の2つだけであること、変更が docs/tech-stack.md 1ファイル
+  のみ（CLAUDE.md/Cargo.toml/README 非変更）を確認。事実誤り・スコープ逸脱なし。
+- human-review: optional（docs のみ・挙動変更/セキュリティ面なし・事実突き合わせ済み）。
+  → PASS + optional のため `ready-to-apply`。`/ticket-apply` で着地可能。
