@@ -43,9 +43,13 @@ make_fixture() {
 	dist="slidewarp-${VERSION}-${target}"
 	mkdir -p "${stage}/${dist}"
 
-	# 実行可能なダミー slidewarp
+	# 実行可能なダミー slidewarp。実バイナリ同様 --help を持ち（0 終了）、
+	# 引数なしでは "slidewarp vTEST" を出す（install.sh のポストインストール確認と整合）。
 	cat >"${stage}/${dist}/slidewarp" <<'EOF'
 #!/bin/sh
+case "${1:-}" in
+--help) echo "slidewarp: usage ..."; exit 0 ;;
+esac
 echo "slidewarp vTEST"
 EOF
 	chmod +x "${stage}/${dist}/slidewarp"

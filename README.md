@@ -18,7 +18,7 @@
 ビルド済みバイナリを GitHub Releases から取得して導入します。
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hayamiz/slidewarp/main/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/hayamiz/slidewarp/master/scripts/install.sh | sh
 ```
 
 - **対応プラットフォーム**: Linux x86_64 / macOS arm64 (Apple Silicon) / macOS x86_64 (Intel)。

@@ -5,7 +5,7 @@
 # sha256 検証のうえ slidewarp バイナリを PATH 上（既定 ~/.local/bin）へ配置する。
 #
 # 使い方（ビルド不要のワンライナー）:
-#   curl -fsSL https://raw.githubusercontent.com/hayamiz/slidewarp/main/scripts/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/hayamiz/slidewarp/master/scripts/install.sh | sh
 #
 # 対応プラットフォーム:
 #   - Linux  x86_64 （既定 musl 静的。glibc 版が要る場合は SLIDEWARP_TARGET で上書き）
@@ -104,6 +104,8 @@ download() {
 
 # tar.gz の sha256 を .sha256 ファイル（<hash>  <basename> 形式）で検証する。
 # tar.gz と .sha256 は同じディレクトリの basename で置かれている前提。
+# ツール不在チェックは呼び出し前（メインフロー）で行うこと（サブシェル内 die は
+# 呼び出し元へメッセージが伝播しないため）。
 verify_sha256() {
 	dir="$1"
 	tarball="$2" # basename
@@ -112,10 +114,8 @@ verify_sha256() {
 		cd "$dir"
 		if command -v sha256sum >/dev/null 2>&1; then
 			sha256sum -c "${tarball}.sha256"
-		elif command -v shasum >/dev/null 2>&1; then
-			shasum -a 256 -c "${tarball}.sha256"
 		else
-			die "sha256sum も shasum も見つかりません。sha256 検証ができません。"
+			shasum -a 256 -c "${tarball}.sha256"
 		fi
 	)
 }
@@ -183,6 +183,11 @@ main() {
 	download "$tar_url" "${tmp}/${asset}" || die "アーカイブのダウンロードに失敗しました: ${tar_url}"
 	download "$sha_url" "${tmp}/${asset}.sha256" || die "sha256 のダウンロードに失敗しました: ${sha_url}"
 
+	# sha256 ツールの存在チェックはサブシェルの外（ここ）で行い、正しいメッセージで終了させる
+	if ! command -v sha256sum >/dev/null 2>&1 && ! command -v shasum >/dev/null 2>&1; then
+		die "sha256sum も shasum も見つかりません。sha256 検証ができません。"
+	fi
+
 	info "sha256 を検証中..."
 	verify_sha256 "$tmp" "$asset" >/dev/null 2>&1 || die "sha256 検証に失敗しました。ダウンロードが破損しているか改竄されています。"
 
@@ -204,10 +209,16 @@ main() {
 	info ""
 	info "インストール完了: ${install_dir}/slidewarp"
 
-	# 軽い動作確認（失敗しても致命的にはしない）
-	if "${install_dir}/slidewarp" --version >/dev/null 2>&1; then
-		ver_out=$("${install_dir}/slidewarp" --version 2>/dev/null | head -n 1)
-		info "  ${ver_out}"
+	# 軽い疎通確認（失敗しても致命的にはしない）。slidewarp は --version を持たず
+	# --help を持つので --help で確認する。実行不能なら警告のみ。
+	if [ -x "${install_dir}/slidewarp" ]; then
+		if "${install_dir}/slidewarp" --help >/dev/null 2>&1; then
+			info "  動作確認: slidewarp --help OK"
+		else
+			info "  注意: ${install_dir}/slidewarp の起動確認に失敗しました（配置は完了）。"
+		fi
+	else
+		info "  注意: ${install_dir}/slidewarp が実行可能ではありません。"
 	fi
 
 	check_path "$install_dir"
