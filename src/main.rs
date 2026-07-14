@@ -7,6 +7,9 @@ mod geometry;
 mod report;
 mod warp;
 
+#[global_allocator]
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 use std::path::{Path, PathBuf};
 
 use clap::Parser;
