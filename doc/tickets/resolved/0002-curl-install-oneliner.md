@@ -2,7 +2,7 @@
 title: GitHub Releases の artifact を curl ワンライナーで導入する手順を整備
 type: enhancement
 priority: medium
-status: open
+status: resolved
 created: 2026-07-14
 updated: 2026-07-14
 ---
@@ -100,3 +100,57 @@ tar.gz と同じ basename のカレントで `sha256sum -c` / `shasum -a 256 -c`
   動くが公式サポートはしない。ネイティブ Windows は cargo ビルドを案内する。
 
 （残決定点はすべて grill で解消済み。実装は上記「決定事項」に従う。）
+
+## Resolution
+
+### 変更点
+
+- **新規 `scripts/install.sh`**（`#!/bin/sh` + `set -eu`、`main "$@"` 末尾呼び出し）:
+  - `detect_target`: `SLIDEWARP_OS`/`SLIDEWARP_ARCH`（無ければ `uname -s`/`-m`）から target を決定。
+    x86_64|amd64→x86_64、arm64|aarch64→aarch64 に正規化。Linux+x86_64→`x86_64-unknown-linux-musl`（既定）、
+    Darwin+arm64→`aarch64-apple-darwin`、Darwin+x86_64→`x86_64-apple-darwin`。
+    Linux+aarch64 は非0終了し `cargo install --git https://github.com/hayamiz/slidewarp` を案内。
+    その他 OS/arch も明確なメッセージで `exit 1`。
+  - latest 取得は GitHub API を使わず `releases/latest` のリダイレクト先 Location から実タグを解決
+    （`resolve_latest_tag`）→ `releases/download/<tag>/<asset>` を構築。`SLIDEWARP_VERSION` で固定版指定可。
+  - `download`: `curl -fsSL`→`wget` フォールバック。`file://` は `cp` へフォールバック（テスト用）。
+  - sha256 検証（`sha256sum -c`→`shasum -a 256 -c`、どちらも無ければエラー）→ `tar xzf` 展開 →
+    `install -m 0755`（無ければ cp+chmod）で `SLIDEWARP_INSTALL_DIR`（既定 `~/.local/bin`）へ常に上書き配置。
+  - 完了後 `--version` で軽く動作確認（失敗は非致命）、PATH 未登録なら bash/zsh 別に追記例を案内。
+  - `mktemp -d` + `trap 'rm -rf "$tmp"' EXIT INT TERM` で一時ディレクトリ確実削除。`local` 不使用・全変数クォート。
+  - テストフック環境変数: `SLIDEWARP_OS` / `SLIDEWARP_ARCH` / `SLIDEWARP_BASE_URL` / `SLIDEWARP_TARGET` /
+    `SLIDEWARP_INSTALL_DIR` / `SLIDEWARP_VERSION`。本番既定挙動は不変。
+- **新規 `scripts/test-install.sh`**: ネットワーク非依存の回帰テスト。`file://` のダミー Release レイアウトを
+  作り、正常系(Linux x86_64) / sha256 不一致 / 未対応 arch(Linux aarch64, "cargo install" 案内含む) /
+  macOS 判定(Darwin arm64) / `SLIDEWARP_TARGET` 上書き(gnu) を assert。全通過で "ALL TESTS PASSED"。
+- **`README.md`**: 「インストール / ビルド」節冒頭に curl ワンライナーと、対応プラットフォーム・既定
+  インストール先・上書き環境変数・aarch64-linux/Windows 非対応の案内を追記。既存の cargo ビルド手順は保持。
+- `scripts/*.sh` は実行ビット（100755）付与済み。
+
+### 追加テスト
+
+`scripts/test-install.sh`（上記 5 ケース）。テストフレームワーク未導入のプロジェクト方針に合わせ、
+POSIX sh 単体で動く自己完結の回帰テストとした（macOS/Linux 双方で sha256 コマンドをフォールバック）。
+
+### 検証結果
+
+- `shellcheck scripts/install.sh scripts/test-install.sh` → 警告なし（OK）。
+- `sh -n scripts/install.sh && sh -n scripts/test-install.sh` → 構文 OK。
+- `sh scripts/test-install.sh` → 全 5 ケース PASS、"ALL TESTS PASSED"（exit 0）。
+
+### grill 決定事項への準拠
+
+- Linux 既定 = musl 静的、`SLIDEWARP_TARGET` で gnu 上書き可 ✓
+- 既定インストール先 `~/.local/bin`、`SLIDEWARP_INSTALL_DIR` で上書き、PATH 案内 ✓
+- Linux+aarch64 は非対応・cargo install 案内で非0終了 ✓
+- 既存インストールは無条件上書き（プロンプトなし）✓
+- Windows 対象外（POSIX sh 前提）✓
+- バージョン既定 latest / `SLIDEWARP_VERSION` 固定指定、GitHub API 不使用の latest リダイレクト方式 ✓
+- downloader は curl 優先・wget フォールバック ✓
+
+### release.yml との整合性
+
+worktree 内の `.github/workflows/release.yml` を確認し、アセット名
+`slidewarp-${GITHUB_REF_NAME}-<target>.tar.gz`（+`.sha256`）・tar 内部構造
+`slidewarp-<ver>-<target>/{slidewarp,README.md,LICENSE}`・sha256 生成方法（`sha256sum`/`shasum -a 256`、
+basename 形式）が Implementation Notes と一致することを確認した。乖離なし。
