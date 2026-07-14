@@ -1,0 +1,22 @@
+# Rust
+/target/
+
+# Python（実験用）
+python/.venv/
+**/__pycache__/
+*.pyc
+
+# サンプル写真は公開リポジトリに含めない（README のみ追跡）
+/input-samples/*
+!/input-samples/README.md
+
+# 処理出力・生成物
+eval-output/
+eval-output-ml/
+out/
+**/report.html
+models/
+*.onnx
+
+# OS/editor
+.DS_Store
