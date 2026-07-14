@@ -82,7 +82,7 @@ tar.gz と同じ basename のカレントで `sha256sum -c` / `shasum -a 256 -c`
 
 ### README 追記（案）
 「インストール / ビルド」節の冒頭に、ビルド不要のワンライナーを追記:
-`curl -fsSL https://raw.githubusercontent.com/hayamiz/slidewarp/main/scripts/install.sh | sh`
+`curl -fsSL https://raw.githubusercontent.com/hayamiz/slidewarp/master/scripts/install.sh | sh`
 既存の `cargo build --release` 手順は残す。
 
 ### 決定事項（grill 済み・2026-07-14）
@@ -154,3 +154,21 @@ worktree 内の `.github/workflows/release.yml` を確認し、アセット名
 `slidewarp-${GITHUB_REF_NAME}-<target>.tar.gz`（+`.sha256`）・tar 内部構造
 `slidewarp-<ver>-<target>/{slidewarp,README.md,LICENSE}`・sha256 生成方法（`sha256sum`/`shasum -a 256`、
 basename 形式）が Implementation Notes と一致することを確認した。乖離なし。
+
+### レビュー指摘への対応（2 回目のレビューで REJECT → 修正）
+
+1. **ワンライナー URL のブランチ名 `main` → `master`**（致命的）: このリポジトリのデフォルト
+   ブランチは `master` で `main` は存在せず、元の raw URL は必ず 404 になっていた。`README.md`・
+   `scripts/install.sh` 冒頭コメント・本チケットの README 追記案の 3 箇所を `master` に修正。
+   `git grep 'hayamiz/slidewarp/main'` が空であることを確認済み。
+2. **ポストインストール動作確認を実バイナリで機能する形へ**: 実際の slidewarp は `--version` を
+   持たず（`error: unexpected argument '--version'` / exit 2）`--help` を持つ。`--version` での
+   確認は常に失敗する「死んだ確認」だったため、`--help >/dev/null 2>&1` を非致命ガードで実行する
+   方式に変更。`scripts/test-install.sh` のダミー `slidewarp` も `--help` で 0 を返し引数なしでは
+   `slidewarp vTEST` を出すよう更新し、新方式と整合させた。
+3. **`verify_sha256` の die がサブシェル内で汎用メッセージ化する件**: sha256 ツール
+   （sha256sum/shasum）不在チェックをサブシェルの外（メインフロー）へ移動し、専用の
+   エラーメッセージと非0終了が正しく伝播するようにした。
+
+再検証（すべてパス）: `shellcheck` 警告なし / `sh -n` 構文 OK / `sh scripts/test-install.sh` は
+5 ケース全 PASS で "ALL TESTS PASSED"。`git grep 'hayamiz/slidewarp/main'` は空。
