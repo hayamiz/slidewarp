@@ -9,7 +9,7 @@ updated: 2026-07-14
 
 ## Description
 
-`.github/workflows/release.yml` は現状 Linux 向けを x86_64 のみ（gnu / musl）ビルドしており、
+`.github/workflows/release.yml` は現状 Linux 向けを x86_64 のみ（musl 静的）ビルドしており、
 **aarch64-linux（ARM Linux）のバイナリを配布していない**。このため #0002 の install.sh は
 Linux + aarch64 を検出したら非0終了し `cargo install` を案内する仕様になっている
 （#0002 の決定事項参照）。ARM Linux ユーザーも curl ワンライナーで導入できるよう、
@@ -17,8 +17,8 @@ release.yml に aarch64-linux ターゲットを追加する。
 
 想定する作業:
 
-- release.yml のビルドマトリクスに `aarch64-unknown-linux-musl`（および必要なら
-  `aarch64-unknown-linux-gnu`）を追加。#0002 の決定に合わせ **musl 静的を主**とする。
+- release.yml のビルドマトリクスに `aarch64-unknown-linux-musl` を追加（#0004 で
+  Linux は musl 静的に一本化済みのため gnu ターゲットは追加しない）。
 - クロスコンパイル手段の選定: `cross`（Docker ベース）か、GitHub Actions の
   ARM runner、または `cargo` + クロスリンカ。純Rust（image + imageproc、OpenCV 非依存）
   なのでネイティブ依存は無く、クロスコンパイルのハードルは低い見込み。

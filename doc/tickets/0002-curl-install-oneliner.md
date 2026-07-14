@@ -9,8 +9,8 @@ updated: 2026-07-14
 
 ## Description
 
-`.github/workflows/release.yml` が `vX.Y.Z` タグ push で 4 ターゲット
-（linux gnu / linux musl 静的 / macOS arm64 / macOS x86_64）のバイナリを
+`.github/workflows/release.yml` が `vX.Y.Z` タグ push で 3 ターゲット
+（linux musl 静的 / macOS arm64 / macOS x86_64）のバイナリを
 tar.gz ＋ sha256 で Release に添付する。これを利用者が **curl ワンライナー**で
 簡単に導入できる手順を整備する。
 
@@ -21,8 +21,7 @@ tar.gz ＋ sha256 で Release に添付する。これを利用者が **curl ワ
   インストール用 shell script（例: `scripts/install.sh`）。sha256 で整合性検証する。
 - `curl -fsSL https://.../install.sh | sh` 形式のワンライナーを README に追記。
   バージョン指定（環境変数 `VERSION` 等）とインストール先の上書きにも対応。
-- musl 静的版を Linux の既定にするか、gnu 版を既定にするかは要検討
-  （静的版は依存が無く導入が確実）。
+- Linux は musl 静的版のみ（#0004 で一本化。依存が無く導入が確実）。
 
 ## Triage
 
@@ -48,9 +47,8 @@ tar.gz ＋ sha256 で Release に添付する。これを利用者が **curl ワ
 Package ステップは `dist="slidewarp-${GITHUB_REF_NAME}-<target>"` で命名し、
 `tar czf "$dist.tar.gz"` と sha256（Linux は `sha256sum`、macOS は `shasum -a 256`）を
 `"$dist.tar.gz.sha256"` へ出力、`softprops/action-gh-release@v2` で Release に添付する。
-よって実アセットはタグ `vX.Y.Z` に対し以下の8ファイル（tar.gz 4種＋各 .sha256）:
+よって実アセットはタグ `vX.Y.Z` に対し以下の6ファイル（tar.gz 3種＋各 .sha256）:
 
-- `slidewarp-vX.Y.Z-x86_64-unknown-linux-gnu.tar.gz`（+ `.sha256`）
 - `slidewarp-vX.Y.Z-x86_64-unknown-linux-musl.tar.gz`（+ `.sha256`）← 完全静的
 - `slidewarp-vX.Y.Z-aarch64-apple-darwin.tar.gz`（+ `.sha256`）← Apple Silicon
 - `slidewarp-vX.Y.Z-x86_64-apple-darwin.tar.gz`（+ `.sha256`）← Intel Mac
@@ -63,7 +61,7 @@ tar.gz と同じ basename のカレントで `sha256sum -c` / `shasum -a 256 -c`
 - `uname -s`: Linux→linux系, Darwin→macOS系
 - `uname -m`: x86_64|amd64 → x86_64, arm64|aarch64 → aarch64
 - 対応表:
-  - Linux + x86_64  → `x86_64-unknown-linux-{musl|gnu}`（既定は下記の決定点）
+  - Linux + x86_64  → `x86_64-unknown-linux-musl`（#0004 で musl 静的一本化）
   - Darwin + arm64  → `aarch64-apple-darwin`
   - Darwin + x86_64 → `x86_64-apple-darwin`
   - Linux + aarch64 → ★ビルド無し。エラー終了し `cargo install` 等を案内（下記決定点）
@@ -86,8 +84,8 @@ tar.gz と同じ basename のカレントで `sha256sum -c` / `shasum -a 256 -c`
 既存の `cargo build --release` 手順は残す。
 
 ### 決定事項（grill 済み・2026-07-14）
-- **Linux 既定ビルド = musl 静的**。依存無しで可搬・「単一バイナリ配布」方針と整合するため。
-  glibc 版が要る場合のみ `SLIDEWARP_TARGET` 環境変数で `x86_64-unknown-linux-gnu` に上書き可能にする。
+- **Linux ビルド = musl 静的のみ**（#0004 で一本化）。依存無しで可搬・「単一バイナリ配布」
+  方針と整合するため。gnu 版はリリースしないので、ターゲット上書きの仕組みは設けない。
 - **既定インストール先 = `~/.local/bin`**。sudo 不要で `| sh` 非対話実行と相性が良いため。
   `SLIDEWARP_INSTALL_DIR` 環境変数で上書き可能。インストール後、`~/.local/bin` が PATH に
   無ければ shell 別（bash/zsh 等）の追記コマンドを案内する。
