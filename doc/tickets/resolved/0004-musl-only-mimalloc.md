@@ -2,7 +2,7 @@
 title: リリースを musl 静的バイナリに一本化し mimalloc を導入する
 type: chore
 priority: medium
-status: open
+status: resolved
 created: 2026-07-14
 updated: 2026-07-14
 ---
@@ -59,3 +59,36 @@ updated: 2026-07-14
 - 一本化に踏み切る前に **gnu vs musl(+mimalloc) の処理時間を実測**し、musl が許容範囲で
   あることを確認してから gnu を削除するのが安全（実測せず削除しない）。
 - README / ドキュメントに Linux バイナリの記載があれば「musl 静的」に更新する。
+
+## Resolution
+
+隔離 worktree（ブランチ `ticket/0004-musl-only-mimalloc`）で実装・コミット済み。
+
+### 変更内容
+- `Cargo.toml`: dependencies に `mimalloc = "0.1"` を追加。
+- `src/main.rs`: doc コメント直後・use 群の前に
+  `#[global_allocator] static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;` を追加。
+- `.github/workflows/release.yml`: ビルドマトリクスから `x86_64-unknown-linux-gnu`
+  エントリを削除。残りは musl 静的 / macOS arm64 / macOS x86_64 の 3 ターゲット。
+  musl-tools インストールステップ（`if: endsWith(matrix.target, '-musl')`）や他ステップは
+  未変更。
+- `CLAUDE.md`: リリース節の「4ターゲット（linux gnu / linux musl静的 / macOS arm64 /
+  macOS x86_64）」を「3ターゲット（linux musl静的 / macOS arm64 / macOS x86_64）」へ更新。
+- `Cargo.lock`: mimalloc v0.1.52 とその依存が自動追加。
+
+### 検証結果（この環境で実施可能な範囲）
+- `cargo build --release`（ネイティブ gnu、LTO 有効）: PASS（2m15s、mimalloc が正常に
+  コンパイル・リンク。既存の detect.rs の unused_mut 警告は本変更と無関係）。
+- `./target/release/slidewarp --help`: PASS（exit 0）。
+- `Cargo.lock` に mimalloc（v0.1.52）追加: 確認済み。
+- release.yml の `x86_64-unknown-linux-gnu` 残存なし（grep 0 件）、musl/macOS×2 の
+  3 ターゲット残存: 確認済み。
+- 自動テストは未追加（本プロジェクトはテストフレームワーク未導入。CLAUDE.md 方針に従い
+  ビルド＋スモーク実行で検証）。
+
+### CI / 実機検証に委ねた項目
+- **musl 静的ビルドの成立確認**（`x86_64-unknown-linux-musl` で musl 上の mimalloc C ビルドが
+  通り、静的バイナリ＝`ldd` で "not a dynamic executable" 相当になること）。本環境は
+  musl ターゲット/musl-gcc 未導入のため未実施。
+- **input-samples 全数の検出品質回帰ゼロ確認**（写真非同梱のため未実施）。
+- **gnu vs musl(+mimalloc) の処理時間実測**（同上）。
