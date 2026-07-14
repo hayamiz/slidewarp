@@ -2,7 +2,7 @@
 title: リリースを musl 静的バイナリに一本化し mimalloc を導入する
 type: chore
 priority: medium
-status: awaiting-review
+status: ready-to-apply
 created: 2026-07-14
 updated: 2026-07-14
 ---
