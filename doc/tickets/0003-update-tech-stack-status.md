@@ -2,7 +2,7 @@
 title: docs/tech-stack.md を現在の採用状況に合わせて更新
 type: docs
 priority: medium
-status: resolved
+status: ready-to-apply
 created: 2026-07-14
 updated: 2026-07-14
 ---
@@ -115,3 +115,14 @@ updated: 2026-07-14
 - `git diff --numstat` = 40 insertions / 0 deletions（§1〜§6 の本文は原文のまま保持、削除行なし）。
 - 見出し階層は `## 0.` → `## 1.` … `## 6.` の番号順を確認。既存リンク（§3 の crates.io 等）は非改変。
 - コード非変更のため cargo build は不要。
+
+### 評価者による独立レビュー
+- Evaluator: PASS — Sonnet 評価者（ticket:ticket-evaluator）。Codex CLI は本セッションで 401
+  Unauthorized（未認証）を確認済みのためフォールバック。評価者は §0 の全事実を独立に裏取り:
+  `Cargo.toml` の依存（image/imageproc 有・opencv/ort 無）、`--remove-people` が `python/` のみで
+  `src/*.rs` に無いこと、`--on-low-confidence` 既定=skip（main.rs:57）、`report.html`/`--no-report`、
+  musl ターゲット（release.yml）を確認。`git diff --numstat` = 40 insertions / 0 deletions で §1〜§6
+  本文の非改変、hunk が §0 挿入と §4 1行注記の2つだけであること、変更が docs/tech-stack.md 1ファイル
+  のみ（CLAUDE.md/Cargo.toml/README 非変更）を確認。事実誤り・スコープ逸脱なし。
+- human-review: optional（docs のみ・挙動変更/セキュリティ面なし・事実突き合わせ済み）。
+  → PASS + optional のため `ready-to-apply`。`/ticket-apply` で着地可能。
