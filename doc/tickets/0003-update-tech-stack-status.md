@@ -31,8 +31,8 @@ updated: 2026-07-14
 ## Triage
 
 - Complexity: medium
-- Mechanical fix: no
-- Requires user decision: yes
+- Mechanical fix: yes（2026-07-14 に構造方針＝案A を確定し機械的に実装可能に。当初は案A/案B が未決で no だった）
+- Requires user decision: no（案A に決定済み）
 - Affected files: 1（`docs/tech-stack.md`。`CLAUDE.md`/`Cargo.toml`/`README.md` は参照のみ）
 - Fix strategy: in-place
 - Notes: 乖離点は裏取り済み（`Cargo.toml` の依存は image/imageproc/rayon/clap/serde/anyhow/walkdir のみで opencv crate も ort も不在。CLAUDE.md/README も純Rus t・OpenCV非依存・Python は実験で --remove-people のみ Python 実装と明記）。だが本チケットは「冒頭サマリを置く vs 各節に反映」という構造方針の選択を明示し「着手時に相談してよい」としているため mechanical=no / user-decision=yes。編集は doc 1ファイルのみで in-place。
@@ -69,7 +69,22 @@ updated: 2026-07-14
 - 出力形式・命名・サイドカー → 出力アスペクトは 4:3/16:9、report.html 生成が既定
   （命名規則・JSON サイドカーの要否は実装確認が要れば残す）。
 
-### 残る決定点
-1. 構造方針（案A/案B、または折衷）。← 「着手時に相談」対象。
-2. §4 の推奨ロジックと実採用の食い違いをどこまで書き換えるか（経緯として残すか上書きするか）。
-3. §6 の「出力形式・命名・サイドカー」で実装未確認の項目を決定済みとするか要確認で残すか。
+### 決定事項（2026-07-14 確定）
+- **構造方針 = 案A**: `docs/tech-stack.md` 冒頭（§1 の前）に「## 0. 現在の採用状況（本文は
+  検討経緯として保存）」節を新設し、実採用を要約する。**§1〜§6 の本文は原文のまま保持**
+  （検討経緯として残す）。→ これにより下記が自動的に決まる:
+  - 残決定点1 → 案A。
+  - 残決定点2（§4 の推奨ロジック書換え）→ **書き換えない**。§4 は「検討当時の推奨」として原文保持し、
+    現採用との差は §0 サマリが担う（§0 に「§4 の本命=選択肢B は検討当時の判断」と一言添える）。
+  - 残決定点3（§6 の未確認項目）→ **§6 本文は原文保持**。決定済み事項は §0 に集約し、実装未確認の
+    細目（命名規則・JSON サイドカーの要否）は §0 で断定せず触れないか「実装準拠」とする。
+- **§0 の内容**（`CLAUDE.md`/`Cargo.toml` で裏取り済みの事実を要約）:
+  - 採用 = 純Rust（`image` + `imageproc`）、OpenCV 非依存の単一バイナリ（musl 静的）。
+    `opencv` crate は不使用＝選択肢B は不採用、選択肢D 寄り。
+  - ML は未導入（`ort` は依存に無い）。classical 幾何処理を自作。
+  - Python（`python/`）は実験用で、Rust 未移植の `--remove-people`（人物セグメンテーション＋inpaint）のみ実装。
+  - §6 の未決定事項の主要項目は決定済み（主軸=純Rust / ML は classical 開始 / 検出失敗時は
+    `--on-low-confidence`）。
+- **自己矛盾の回避**: §0 冒頭に「以降の §1〜§6 は選定検討時の記録。未決定事項は §0 で解決済み」と
+  明記し、§6 の未チェック箇条書きと §0 の齟齬を枠付けで吸収する（§6 本文自体は書き換えない）。
+- **スコープ**: 変更は `docs/tech-stack.md` のみ。`CLAUDE.md`/`Cargo.toml`/`README.md` は裏取り用の参照で非編集。
