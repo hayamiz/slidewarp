@@ -2,7 +2,7 @@
 title: リリースを musl 静的バイナリに一本化し mimalloc を導入する
 type: chore
 priority: medium
-status: resolved
+status: awaiting-review
 created: 2026-07-14
 updated: 2026-07-14
 ---
@@ -92,3 +92,17 @@ updated: 2026-07-14
   musl ターゲット/musl-gcc 未導入のため未実施。
 - **input-samples 全数の検出品質回帰ゼロ確認**（写真非同梱のため未実施）。
 - **gnu vs musl(+mimalloc) の処理時間実測**（同上）。
+
+### 追加対応（ユーザ要望）
+- `README.md`: 「musl 静的バイナリのビルド・検証」節を追加。`rustup target add
+  x86_64-unknown-linux-musl` ＋ `musl-tools`（mimalloc の C ビルドに必要）導入 →
+  `cargo build --release --target x86_64-unknown-linux-musl` → `ldd`/`file` で静的確認、
+  という手順を記載。
+
+### レビュー
+- Evaluator: PASS — Sonnet 評価者（ticket:ticket-evaluator）。Codex CLI は auto モードの
+  ポリシで `danger-full-access` 起動が拒否されたためフォールバック。クリーンビルド
+  （`rm -rf target && cargo build --release`）で mimalloc v0.1.52 のリンク成立、`--help`
+  正常終了、release.yml の gnu 残存なし・3 ターゲット維持、diff に無関係変更なし、を確認。
+- human-review: recommended — リリースワークフロー変更で、CI 上での 3 ターゲット実ビルド
+  （特に musl 静的リンク成立）が本環境では未検証。次回タグ push 時の CI 結果を人手で最終確認すべき。
