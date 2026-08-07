@@ -75,6 +75,20 @@ file target/x86_64-unknown-linux-musl/release/slidewarp   # → "statically link
 > `musl-tools` を入れずに musl ターゲットをビルドすると、mimalloc の C ビルドが
 > C コンパイラ不在で失敗する点に注意。
 
+### 更新（自己アップデート）
+
+インストール済みの `slidewarp` は、自分自身を GitHub Releases の最新版へ更新できます。
+
+```bash
+slidewarp --check-update      # 新しいバージョンの有無を確認（置換しない）
+slidewarp --system-update     # 新しければ確認のうえ自分自身を最新版に置き換える
+slidewarp --system-update -y  # 確認プロンプトを省略（CI 等の非対話環境用）
+```
+
+- 対応は install.sh と同じ **Linux x86_64 (musl) / macOS arm64 / macOS x86_64**。
+- それ以外（aarch64 Linux / Windows 等）は自己更新用の配布バイナリが無いため、
+  `cargo install --git https://github.com/hayamiz/slidewarp` で更新してください。
+
 ## 使い方
 
 ```bash

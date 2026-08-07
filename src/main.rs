@@ -5,6 +5,7 @@ mod detect;
 mod enhance;
 mod geometry;
 mod report;
+mod update;
 mod warp;
 
 #[global_allocator]
@@ -36,11 +37,10 @@ fn load_oriented(path: &Path) -> anyhow::Result<RgbImage> {
 #[command(name = "slidewarp", about = "学会撮影スライド写真を検出・台形補正・シャープ化する（純Rust版）")]
 struct Args {
     /// 写真ファイル または フォルダ（再帰探索）
-    #[arg(required = true)]
     inputs: Vec<PathBuf>,
     /// 出力ディレクトリ
     #[arg(short, long)]
-    out_dir: PathBuf,
+    out_dir: Option<PathBuf>,
     /// 露出/コントラストの自動補正
     #[arg(long)]
     exposure: bool,
@@ -77,6 +77,15 @@ struct Args {
     /// デバッグ: 各画像の幾何（見かけ/復元アスペクト・persp・決定比）を出力して終了
     #[arg(long)]
     dump_geom: bool,
+    /// GitHub Releases の最新版を確認し、新しければ自分自身を置き換えて更新する
+    #[arg(long)]
+    system_update: bool,
+    /// 新しいバージョンの有無を確認するだけ（置換しない）
+    #[arg(long)]
+    check_update: bool,
+    /// 更新時の確認プロンプトを省略する（非対話/CI 用）
+    #[arg(short = 'y', long)]
+    yes: bool,
 }
 
 struct ProcResult {
@@ -144,7 +153,7 @@ fn save_image(img: &RgbImage, path: &Path, quality: u8) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn process_image(src: &Path, args: &Args) -> ProcResult {
+fn process_image(src: &Path, args: &Args, out_dir: &Path) -> ProcResult {
     let mk_err = |msg: String| ProcResult {
         src: src.to_path_buf(),
         status: "error",
@@ -163,7 +172,7 @@ fn process_image(src: &Path, args: &Args) -> ProcResult {
 
     let reject = |status: &'static str, conf: f64, method: String| -> ProcResult {
         if args.on_low_confidence == "copy" {
-            let review = args.out_dir.join("_review");
+            let review = out_dir.join("_review");
             let _ = std::fs::create_dir_all(&review);
             let sext = src.extension().and_then(|e| e.to_str()).map(|e| format!(".{e}")).unwrap_or_default();
             let op = output_path(src, &review, "_orig", &sext);
@@ -185,10 +194,10 @@ fn process_image(src: &Path, args: &Args) -> ProcResult {
     }
     let warped = warp::warp_to_rect(&img, &quad, args.max_long_side, args.margin);
     let result = enhance::enhance(&warped, args.sharpen, args.exposure, args.color);
-    if let Err(e) = std::fs::create_dir_all(&args.out_dir) {
+    if let Err(e) = std::fs::create_dir_all(out_dir) {
         return mk_err(format!("出力先作成失敗: {e}"));
     }
-    let op = output_path(src, &args.out_dir, "", &ext);
+    let op = output_path(src, out_dir, "", &ext);
     if let Err(e) = save_image(&result, &op, args.jpeg_quality) {
         return mk_err(format!("書き出し失敗: {e}"));
     }
@@ -238,6 +247,20 @@ fn log(res: &ProcResult) {
 
 fn main() {
     let args = Args::parse();
+    if args.check_update {
+        if let Err(e) = update::check() {
+            eprintln!("エラー: {e}");
+            std::process::exit(1);
+        }
+        return;
+    }
+    if args.system_update {
+        if let Err(e) = update::run_update(args.yes) {
+            eprintln!("エラー: {e}");
+            std::process::exit(1);
+        }
+        return;
+    }
     if args.jobs > 0 {
         let _ = rayon::ThreadPoolBuilder::new().num_threads(args.jobs).build_global();
     }
@@ -281,10 +304,18 @@ fn main() {
         return;
     }
 
+    let out_dir = match args.out_dir.clone() {
+        Some(d) => d,
+        None => {
+            eprintln!("出力先が未指定です。-o/--out-dir を指定してください。");
+            std::process::exit(2);
+        }
+    };
+
     let jobs = if args.jobs > 0 { args.jobs } else { rayon::current_num_threads() };
     println!("対象 {} 枚 / 並列 {}", files.len(), jobs);
 
-    let results: Vec<ProcResult> = files.par_iter().map(|f| process_image(f, &args)).collect();
+    let results: Vec<ProcResult> = files.par_iter().map(|f| process_image(f, &args, &out_dir)).collect();
     for r in &results {
         log(r);
     }
@@ -309,8 +340,8 @@ fn main() {
                 report::Item {
                     id: i,
                     name: r.src.file_name().and_then(|n| n.to_str()).unwrap_or("?").to_string(),
-                    src: rel_path(&args.out_dir, &r.src),
-                    out: r.out_path.as_ref().map(|p| rel_path(&args.out_dir, p)),
+                    src: rel_path(&out_dir, &r.src),
+                    out: r.out_path.as_ref().map(|p| rel_path(&out_dir, p)),
                     status: r.status.to_string(),
                     confidence: (r.confidence * 1000.0).round() / 1000.0,
                     method: r.method.clone(),
@@ -319,7 +350,7 @@ fn main() {
                 }
             })
             .collect();
-        match report::write_report(items, &args.out_dir) {
+        match report::write_report(items, &out_dir) {
             Ok(p) => println!("レビュー: {}", p.display()),
             Err(e) => eprintln!("レポート生成失敗: {e}"),
         }
