@@ -5,6 +5,7 @@ torch は import しない（単体テストを軽量に保つため）。
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 import cv2
@@ -77,3 +78,41 @@ def face_bands_from_person_mask(person_mask, band, min_area=400):
             continue
         rects.append((int(x), int(y), int(w), max(1, int(h * float(band)))))
     return rects
+
+
+@dataclass
+class DumpGeom:
+    method: str
+    aspect: str | None
+    quad: np.ndarray | None
+
+
+def parse_dump_geom(stdout: str) -> dict[str, DumpGeom]:
+    result: dict[str, DumpGeom] = {}
+    corner_re = re.compile(r"\(-?\d+,-?\d+\)")
+    for line in stdout.splitlines():
+        line = line.rstrip()
+        if not line:
+            continue
+        if line.startswith("none "):
+            name = line[len("none "):].strip()
+            result[name] = DumpGeom("none", None, None)
+            continue
+        m = re.search(r"\[(4:3|16:9)\]\s+quad=(.+?)\s{2,}(.+)$", line)
+        if not m:
+            continue
+        aspect, quad_str, name = m.group(1), m.group(2), m.group(3).strip()
+        method = line.split(None, 1)[0]
+        pts = [tuple(int(v) for v in c.strip("()").split(",")) for c in corner_re.findall(quad_str)]
+        quad = np.array(pts, dtype=np.float32) if len(pts) == 4 else None
+        result[name] = DumpGeom(method, aspect, quad)
+    return result
+
+
+def parse_confidence(stdout: str) -> dict[str, float]:
+    result: dict[str, float] = {}
+    for line in stdout.splitlines():
+        m = re.search(r"^\[.{1,6}\]\s+(.+?)\s+conf=([\d.]+)", line)
+        if m:
+            result[m.group(1).strip()] = float(m.group(2))
+    return result

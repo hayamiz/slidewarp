@@ -61,3 +61,24 @@ def test_face_bands_skips_small_blobs():
     m = np.zeros((100, 100), np.uint8)
     m[10:15, 10:15] = 255         # 面積25 < min_area
     assert ac.face_bands_from_person_mask(m, band=0.25, min_area=400) == []
+
+
+def test_parse_dump_geom_with_spaced_name():
+    line = ("hough est=1.330 rec=Some(1.78) persp=Some(0.05) [16:9] "
+            "quad=(10,20) (500,25) (505,400) (12,395)  2026-06-23 08.44.43.jpg")
+    d = ac.parse_dump_geom(line + "\nnone  weird name.jpg\n")
+    g = d["2026-06-23 08.44.43.jpg"]
+    assert g.method == "hough"
+    assert g.aspect == "16:9"
+    assert g.quad.shape == (4, 2)
+    assert list(g.quad[0]) == [10, 20]
+    assert list(g.quad[2]) == [505, 400]
+    assert d["weird name.jpg"].quad is None
+    assert d["weird name.jpg"].method == "none"
+
+
+def test_parse_confidence_with_spaced_name():
+    out = "対象 2 枚 / 並列 4\n[OK  ] 2026-06-23 08.44.43.jpg  conf=0.87 hough\n[LOW ] x.jpg  conf=0.20 minrect\n"
+    c = ac.parse_confidence(out)
+    assert c["2026-06-23 08.44.43.jpg"] == 0.87
+    assert c["x.jpg"] == 0.20
