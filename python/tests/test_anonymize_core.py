@@ -10,3 +10,38 @@ def test_inset_quad_shrinks_toward_centroid():
     assert np.allclose(out, expected, atol=1e-4)
     # 元の quad は破壊しない
     assert quad[0, 0] == 0
+
+
+def test_pixelate_blocks_reduce_detail():
+    img = np.arange(64 * 64 * 3, dtype=np.uint8).reshape(64, 64, 3)
+    out = ac.pixelate(img, block=16)  # 64/16=4x4 に縮小して戻す
+    assert out.shape == img.shape
+    # 左上 16x16 ブロックは単一色になる（ブロック内が一定）
+    block = out[0:16, 0:16].reshape(-1, 3)
+    assert np.all(block == block[0])
+
+
+def test_build_mask_covers_quad_not_edges():
+    mask = ac.build_mosaic_mask((100, 100),
+                                np.array([[20, 20], [80, 20], [80, 80], [20, 80]], np.float32),
+                                [])
+    assert mask.shape == (100, 100)
+    assert mask[50, 50] == 255      # 内側は対象
+    assert mask[0, 0] == 0          # 画像端(辺の外)は非対象
+
+
+def test_build_mask_adds_face_rects():
+    mask = ac.build_mosaic_mask((100, 100), None, [(10, 10, 20, 20)])
+    assert mask[15, 15] == 255
+    assert mask[50, 50] == 0
+
+
+def test_apply_mosaic_only_inside_mask():
+    img = np.zeros((32, 32, 3), np.uint8)
+    img[:] = 100
+    img[8:24, 8:24] = np.arange(16 * 16 * 3, dtype=np.uint8).reshape(16, 16, 3)
+    mask = np.zeros((32, 32), np.uint8)
+    mask[8:24, 8:24] = 255
+    out = ac.apply_mosaic(img, mask, block=8)
+    assert np.all(out[0, 0] == 100)          # マスク外は不変
+    assert not np.array_equal(out[8:24, 8:24], img[8:24, 8:24])  # マスク内は変化
