@@ -14,6 +14,7 @@ python/.venv/
 eval-output/
 eval-output-ml/
 out/
+samples/_staging/
 **/report.html
 models/
 *.onnx
