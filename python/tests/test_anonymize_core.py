@@ -112,3 +112,24 @@ def test_compare_fail_on_method_and_conf():
 def test_compare_fail_on_missing_quad():
     r = ac.compare(_dg(), _dg(quad=None), 0.8, 0.8, img_long_side=1000)
     assert not r.passed
+
+
+def test_write_review_html(tmp_path):
+    entries = [{
+        "name": "a.jpg",
+        "orig_rel": "../../input-samples/a.jpg",
+        "anon_rel": "a.jpg",
+        "verify": ac.VerifyResult(passed=True, reasons=[], quad_drift_px=1.2, conf_delta=0.01),
+    }, {
+        "name": "b.jpg",
+        "orig_rel": "../../input-samples/b.jpg",
+        "anon_rel": "b.jpg",
+        "verify": ac.VerifyResult(passed=False, reasons=["quad ズレ 30px"], quad_drift_px=30.0),
+    }]
+    out = tmp_path / "review.html"
+    ac.write_review_html(entries, out)
+    html = out.read_text(encoding="utf-8")
+    assert "a.jpg" in html and "b.jpg" in html
+    assert "PASS" in html and "FAIL" in html
+    assert "quad ズレ 30px" in html
+    assert "../../input-samples/a.jpg" in html

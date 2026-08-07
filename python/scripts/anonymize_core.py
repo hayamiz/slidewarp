@@ -5,6 +5,7 @@ torch は import しない（単体テストを軽量に保つため）。
 
 from __future__ import annotations
 
+import html as _html
 import re
 from dataclasses import dataclass, field
 
@@ -146,3 +147,43 @@ def compare(orig, anon, orig_conf, anon_conf, img_long_side,
     return VerifyResult(passed=not reasons, reasons=reasons,
                         quad_drift_px=(0.0 if drift == float('inf') else drift),
                         conf_delta=conf_delta)
+
+
+def write_review_html(entries, out_path) -> None:
+    from pathlib import Path
+
+    rows = []
+    for e in entries:
+        v = e["verify"]
+        badge = "PASS" if v.passed else "FAIL"
+        color = "#1a7f37" if v.passed else "#cf222e"
+        reasons = "<br>".join(_html.escape(r) for r in v.reasons) or "—"
+        rows.append(f"""
+        <section class="item">
+          <h2>{_html.escape(e['name'])}
+            <span class="badge" style="background:{color}">{badge}</span></h2>
+          <div class="pair">
+            <figure><figcaption>元</figcaption>
+              <img src="{_html.escape(e['orig_rel'])}"></figure>
+            <figure><figcaption>匿名化版</figcaption>
+              <img src="{_html.escape(e['anon_rel'])}"></figure>
+          </div>
+          <p class="meta">quad drift={v.quad_drift_px:.1f}px / conf差={v.conf_delta:.3f}</p>
+          <p class="reasons">{reasons}</p>
+        </section>""")
+    doc = f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<title>anonymize review</title><style>
+body{{font-family:sans-serif;margin:1.5rem;background:#fff;color:#111}}
+.item{{border:1px solid #ddd;border-radius:8px;padding:1rem;margin:1rem 0}}
+.badge{{color:#fff;padding:.1em .6em;border-radius:1em;font-size:.7em;vertical-align:middle}}
+.pair{{display:flex;gap:1rem;flex-wrap:wrap}}
+figure{{margin:0}} img{{max-width:46vw;height:auto;border:1px solid #ccc}}
+.meta{{color:#555;font-size:.9em}} .reasons{{color:#cf222e;white-space:pre-wrap}}
+</style></head><body>
+<h1>匿名化サンプル レビュー</h1>
+<p>各画像で「顔が消えているか / 本文が判読不能か / 辺にモザイクが掛かっていないか」を目視確認してください。</p>
+{''.join(rows)}
+</body></html>"""
+    p = Path(out_path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(doc, encoding="utf-8")
