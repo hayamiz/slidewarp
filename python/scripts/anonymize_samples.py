@@ -55,7 +55,8 @@ def generate(cfg) -> list[str]:
         sys.exit(f"Rust バイナリが無い: {BIN}\n先に `cargo build --release` を実行してください。")
     STAGING.mkdir(parents=True, exist_ok=True)
 
-    geom = ac.parse_dump_geom(_run([BIN, "--dump-geom", INPUT_DIR]))
+    with tempfile.TemporaryDirectory() as _t:
+        geom = ac.parse_dump_geom(_run([BIN, "--dump-geom", "-o", _t, INPUT_DIR]))
     seg = PersonSegmenter()
     inset = float(cfg.get("mosaic_inset", 0.06))
     block_div = int(cfg.get("mosaic_block", 16))
@@ -86,9 +87,8 @@ def generate(cfg) -> list[str]:
         faces += [tuple(int(v) for v in r) for r in item.get("faces", [])]
 
         mask = ac.build_mosaic_mask((h, w), inner, faces)
-        short = min(w, h) if inner is None else int(min(
-            np.ptp(inner[:, 0]) if inner is not None else w,
-            np.ptp(inner[:, 1]) if inner is not None else h))
+        short = (min(w, h) if inner is None
+                 else int(min(np.ptp(inner[:, 0]), np.ptp(inner[:, 1]))))
         block = max(2, short // block_div)
         out = ac.apply_mosaic(img, mask, block)
         ac.strip_and_write(out, STAGING / name)
@@ -99,9 +99,10 @@ def generate(cfg) -> list[str]:
 
 def verify(names) -> list[dict]:
     """元と staging で Rust を走らせ、名前ごとに VerifyResult を作り entries を返す。"""
-    g_orig = ac.parse_dump_geom(_run([BIN, "--dump-geom", INPUT_DIR]))
-    g_anon = ac.parse_dump_geom(_run([BIN, "--dump-geom", STAGING]))
-    with tempfile.TemporaryDirectory() as t1, tempfile.TemporaryDirectory() as t2:
+    with tempfile.TemporaryDirectory() as tg, \
+         tempfile.TemporaryDirectory() as t1, tempfile.TemporaryDirectory() as t2:
+        g_orig = ac.parse_dump_geom(_run([BIN, "--dump-geom", "-o", tg, INPUT_DIR]))
+        g_anon = ac.parse_dump_geom(_run([BIN, "--dump-geom", "-o", tg, STAGING]))
         c_orig = ac.parse_confidence(_run([BIN, INPUT_DIR, "-o", t1, "--on-low-confidence", "copy"]))
         c_anon = ac.parse_confidence(_run([BIN, STAGING, "-o", t2, "--on-low-confidence", "copy"]))
     entries = []
