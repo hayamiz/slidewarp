@@ -1,6 +1,6 @@
 [package]
 name = "slidewarp"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "学会撮影スライド写真からスライド領域を検出し、トリミング・台形補正・シャープ化する CLI（純Rust）"
 license = "MIT"
