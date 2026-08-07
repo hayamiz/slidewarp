@@ -2,6 +2,26 @@ import numpy as np
 import anonymize_core as ac
 
 
+def test_strip_and_write_produces_no_exif(tmp_path):
+    from PIL import Image
+
+    # EXIF(Orientation)付きの元 JPEG を用意
+    src = tmp_path / "src.jpg"
+    im = Image.new("RGB", (20, 16), (120, 30, 30))
+    exif = im.getexif()
+    exif[0x0112] = 6  # Orientation タグ
+    im.save(src, exif=exif)
+    assert len(Image.open(src).getexif()) > 0  # 前提: 元には EXIF がある
+
+    # strip_and_write で書き出すと EXIF が消える
+    import cv2
+
+    out = tmp_path / "out.jpg"
+    ac.strip_and_write(cv2.imread(str(src)), out)
+    assert out.exists()
+    assert len(Image.open(out).getexif()) == 0
+
+
 def test_inset_quad_shrinks_toward_centroid():
     quad = np.array([[0, 0], [100, 0], [100, 100], [0, 100]], dtype=np.float32)
     out = ac.inset_quad(quad, 0.1)
