@@ -1,0 +1,204 @@
+"""公開用サンプル匿名化の純粋関数（幾何・画像・パース・検証・review生成）。
+
+torch は import しない（単体テストを軽量に保つため）。
+"""
+
+from __future__ import annotations
+
+import html as _html
+import re
+from dataclasses import dataclass, field
+
+import cv2
+import numpy as np
+
+
+def inset_quad(quad: np.ndarray, inset: float) -> np.ndarray:
+    """quad の各頂点を重心方向に inset 割合だけ寄せた (4,2) を返す。
+
+    inset は各辺を内側へ縮める割合（辺ごとに inset 分縮むため、対辺間の
+    間隔は全体で 2*inset 縮む）。計画書のテスト期待値
+    （100x100 の正方形で inset=0.1 -> 角が (10,10) 等）に整合する係数。
+    """
+    q = np.asarray(quad, dtype=np.float32)
+    c = q.mean(axis=0)
+    return (c + (q - c) * (1.0 - 2.0 * float(inset))).astype(np.float32)
+
+
+def pixelate(img: np.ndarray, block: int) -> np.ndarray:
+    """画像を 1/block に縮小し最近傍で元サイズへ戻したブロック化画像を返す。"""
+    h, w = img.shape[:2]
+    block = max(1, int(block))
+    sw, sh = max(1, w // block), max(1, h // block)
+    small = cv2.resize(img, (sw, sh), interpolation=cv2.INTER_AREA)
+    return cv2.resize(small, (w, h), interpolation=cv2.INTER_NEAREST)
+
+
+def build_mosaic_mask(shape, inner_quad, face_rects) -> np.ndarray:
+    """(h,w) uint8 マスク。モザイク対象=255。"""
+    h, w = shape
+    mask = np.zeros((h, w), np.uint8)
+    if inner_quad is not None:
+        cv2.fillConvexPoly(mask, np.asarray(inner_quad, np.int32), 255)
+    for (x, y, rw, rh) in face_rects:
+        x0, y0 = max(0, x), max(0, y)
+        x1, y1 = min(w, x + rw), min(h, y + rh)
+        if x1 > x0 and y1 > y0:
+            mask[y0:y1, x0:x1] = 255
+    return mask
+
+
+def apply_mosaic(img: np.ndarray, mask: np.ndarray, block: int) -> np.ndarray:
+    """mask=255 の画素だけ pixelate 画像に差し替える。"""
+    pix = pixelate(img, block)
+    out = img.copy()
+    sel = mask.astype(bool)
+    out[sel] = pix[sel]
+    return out
+
+
+def apply_blur(img: np.ndarray, mask: np.ndarray, sigma: float) -> np.ndarray:
+    """mask=255 の画素だけ強ガウシアンぼかしに差し替える。
+
+    モザイクと違い軸平行のブロック境界エッジを作らないため、Hough/輪郭検出への
+    影響が小さい。スライド内部の匿名化に使う（辺は mask 外なので無処理のまま）。
+    """
+    sigma = max(1.0, float(sigma))
+    k = int(sigma * 3) | 1  # 奇数のカーネルサイズ
+    blurred = cv2.GaussianBlur(img, (k, k), sigma)
+    out = img.copy()
+    sel = mask.astype(bool)
+    out[sel] = blurred[sel]
+    return out
+
+
+def strip_and_write(img_bgr: np.ndarray, out_path, quality: int = 95) -> None:
+    """EXIF を持たない画像として書き出す（cv2.imwrite は EXIF を書かない）。"""
+    from pathlib import Path
+
+    p = Path(out_path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    params = [cv2.IMWRITE_JPEG_QUALITY, int(quality)] if p.suffix.lower() in (".jpg", ".jpeg") else []
+    ok = cv2.imwrite(str(p), img_bgr, params)
+    if not ok:
+        raise RuntimeError(f"書き出し失敗: {p}")
+
+
+def face_bands_from_person_mask(person_mask, band, min_area=400):
+    """人物マスクの連結成分ごとに bbox 上部 band 割合を顔矩形として返す。"""
+    n, _, stats, _ = cv2.connectedComponentsWithStats((person_mask > 0).astype(np.uint8), 8)
+    rects = []
+    for i in range(1, n):  # 0 は背景
+        x, y, w, h, area = stats[i]
+        if area < min_area:
+            continue
+        rects.append((int(x), int(y), int(w), max(1, int(h * float(band)))))
+    return rects
+
+
+@dataclass
+class DumpGeom:
+    method: str
+    aspect: str | None
+    quad: np.ndarray | None
+
+
+def parse_dump_geom(stdout: str) -> dict[str, DumpGeom]:
+    result: dict[str, DumpGeom] = {}
+    corner_re = re.compile(r"\(-?\d+,-?\d+\)")
+    for line in stdout.splitlines():
+        line = line.rstrip()
+        if not line:
+            continue
+        if line.startswith("none "):
+            name = line[len("none "):].strip()
+            result[name] = DumpGeom("none", None, None)
+            continue
+        m = re.search(r"\[(4:3|16:9)\]\s+quad=(.+?)\s{2,}(.+)$", line)
+        if not m:
+            continue
+        aspect, quad_str, name = m.group(1), m.group(2), m.group(3).strip()
+        method = line.split(None, 1)[0]
+        pts = [tuple(int(v) for v in c.strip("()").split(",")) for c in corner_re.findall(quad_str)]
+        quad = np.array(pts, dtype=np.float32) if len(pts) == 4 else None
+        result[name] = DumpGeom(method, aspect, quad)
+    return result
+
+
+def parse_confidence(stdout: str) -> dict[str, float]:
+    result: dict[str, float] = {}
+    for line in stdout.splitlines():
+        m = re.search(r"^\[.{1,6}\]\s+(.+?)\s+conf=([\d.]+)", line)
+        if m:
+            result[m.group(1).strip()] = float(m.group(2))
+    return result
+
+
+@dataclass
+class VerifyResult:
+    passed: bool
+    reasons: list[str] = field(default_factory=list)
+    quad_drift_px: float = 0.0
+    conf_delta: float = 0.0
+
+
+def compare(orig, anon, orig_conf, anon_conf, img_long_side,
+            quad_tol_frac=0.01, conf_tol=0.03) -> VerifyResult:
+    reasons: list[str] = []
+    drift = float("inf")
+    if orig.quad is None or anon.quad is None:
+        reasons.append("quad 未検出（元または匿名化版で検出できず）")
+    else:
+        drift = float(np.max(np.linalg.norm(orig.quad - anon.quad, axis=1)))
+        if drift >= quad_tol_frac * img_long_side:
+            reasons.append(f"quad ズレ {drift:.1f}px >= 許容 {quad_tol_frac * img_long_side:.1f}px")
+    if orig.method != anon.method:
+        reasons.append(f"method 不一致 {orig.method}->{anon.method}")
+    if orig.aspect != anon.aspect:
+        reasons.append(f"aspect 不一致 {orig.aspect}->{anon.aspect}")
+    conf_delta = abs(float(orig_conf) - float(anon_conf))
+    if conf_delta >= conf_tol:
+        reasons.append(f"conf 差 {conf_delta:.3f} >= 許容 {conf_tol}")
+    return VerifyResult(passed=not reasons, reasons=reasons,
+                        quad_drift_px=(0.0 if drift == float('inf') else drift),
+                        conf_delta=conf_delta)
+
+
+def write_review_html(entries, out_path) -> None:
+    from pathlib import Path
+
+    rows = []
+    for e in entries:
+        v = e["verify"]
+        badge = "PASS" if v.passed else "FAIL"
+        color = "#1a7f37" if v.passed else "#cf222e"
+        reasons = "<br>".join(_html.escape(r) for r in v.reasons) or "—"
+        rows.append(f"""
+        <section class="item">
+          <h2>{_html.escape(e['name'])}
+            <span class="badge" style="background:{color}">{badge}</span></h2>
+          <div class="pair">
+            <figure><figcaption>元</figcaption>
+              <img src="{_html.escape(e['orig_rel'])}"></figure>
+            <figure><figcaption>匿名化版</figcaption>
+              <img src="{_html.escape(e['anon_rel'])}"></figure>
+          </div>
+          <p class="meta">quad drift={v.quad_drift_px:.1f}px / conf差={v.conf_delta:.3f}</p>
+          <p class="reasons">{reasons}</p>
+        </section>""")
+    doc = f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<title>anonymize review</title><style>
+body{{font-family:sans-serif;margin:1.5rem;background:#fff;color:#111}}
+.item{{border:1px solid #ddd;border-radius:8px;padding:1rem;margin:1rem 0}}
+.badge{{color:#fff;padding:.1em .6em;border-radius:1em;font-size:.7em;vertical-align:middle}}
+.pair{{display:flex;gap:1rem;flex-wrap:wrap}}
+figure{{margin:0}} img{{max-width:46vw;height:auto;border:1px solid #ccc}}
+.meta{{color:#555;font-size:.9em}} .reasons{{color:#cf222e;white-space:pre-wrap}}
+</style></head><body>
+<h1>匿名化サンプル レビュー</h1>
+<p>各画像で「顔が消えているか / 本文が判読不能か / 辺にモザイクが掛かっていないか」を目視確認してください。</p>
+{''.join(rows)}
+</body></html>"""
+    p = Path(out_path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(doc, encoding="utf-8")
