@@ -57,6 +57,21 @@ def apply_mosaic(img: np.ndarray, mask: np.ndarray, block: int) -> np.ndarray:
     return out
 
 
+def apply_blur(img: np.ndarray, mask: np.ndarray, sigma: float) -> np.ndarray:
+    """mask=255 の画素だけ強ガウシアンぼかしに差し替える。
+
+    モザイクと違い軸平行のブロック境界エッジを作らないため、Hough/輪郭検出への
+    影響が小さい。スライド内部の匿名化に使う（辺は mask 外なので無処理のまま）。
+    """
+    sigma = max(1.0, float(sigma))
+    k = int(sigma * 3) | 1  # 奇数のカーネルサイズ
+    blurred = cv2.GaussianBlur(img, (k, k), sigma)
+    out = img.copy()
+    sel = mask.astype(bool)
+    out[sel] = blurred[sel]
+    return out
+
+
 def strip_and_write(img_bgr: np.ndarray, out_path, quality: int = 95) -> None:
     """EXIF を持たない画像として書き出す（cv2.imwrite は EXIF を書かない）。"""
     from pathlib import Path

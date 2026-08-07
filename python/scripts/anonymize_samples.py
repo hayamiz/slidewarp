@@ -59,8 +59,9 @@ def generate(cfg) -> list[str]:
         geom = ac.parse_dump_geom(_run([BIN, "--dump-geom", "-o", _t, INPUT_DIR]))
     seg = PersonSegmenter()
     inset = float(cfg.get("mosaic_inset", 0.06))
-    block_div = int(cfg.get("mosaic_block", 16))
+    face_block_div = int(cfg.get("face_block", 8))
     band = float(cfg.get("face_band", 0.22))
+    default_sigma = float(cfg.get("slide_blur_sigma", 15))  # スライド内部ぼかしσ(px絶対値)
 
     done = []
     for item in cfg["image"]:
@@ -80,20 +81,31 @@ def generate(cfg) -> list[str]:
             quad = g.quad if g else None
         inner = ac.inset_quad(quad, inset) if quad is not None else None
         if inner is None:
-            print(f"[warn] quad 未取得（内部モザイク無し）: {name}")
+            print(f"[warn] quad 未取得（内部ぼかし無し）: {name}")
 
-        # 顔: 人物マスク上部バンド + 手動 override（追加）
-        faces = ac.face_bands_from_person_mask(seg.mask(img), band=band)
+        # ① スライド内部: 強ガウシアンぼかし（グリッド線を作らず検出への影響を抑える）
+        out = img
+        sigma = 0.0
+        if inner is not None:
+            sigma = float(item.get("slide_blur_sigma", default_sigma))
+            slide_mask = ac.build_mosaic_mask((h, w), inner, [])
+            out = ac.apply_blur(out, slide_mask, sigma)
+
+        # ② 顔: 人物マスク上部バンド + 手動 override（追加）をモザイク化。
+        #    検出を壊さない範囲に留めるため、極端に広い帯（誤セグメント）は幅を制限。
+        max_face_w = int(w * float(cfg.get("face_max_width_frac", 0.35)))
+        faces = [(x, y, min(rw, max_face_w), rh)
+                 for (x, y, rw, rh) in ac.face_bands_from_person_mask(seg.mask(img), band=band)]
         faces += [tuple(int(v) for v in r) for r in item.get("faces", [])]
+        if faces:
+            face_mask = ac.build_mosaic_mask((h, w), None, faces)
+            face_short = min((rh for (_, _, _, rh) in faces if rh > 0), default=h)
+            face_block = max(2, min(face_short, min(w, h) // 4) // face_block_div)
+            out = ac.apply_mosaic(out, face_mask, face_block)
 
-        mask = ac.build_mosaic_mask((h, w), inner, faces)
-        short = (min(w, h) if inner is None
-                 else int(min(np.ptp(inner[:, 0]), np.ptp(inner[:, 1]))))
-        block = max(2, short // block_div)
-        out = ac.apply_mosaic(img, mask, block)
         ac.strip_and_write(out, STAGING / name)
         done.append(name)
-        print(f"[gen] {name} faces={len(faces)} block={block}")
+        print(f"[gen] {name} faces={len(faces)} blur_sigma={sigma:.1f}")
     return done
 
 

@@ -47,6 +47,20 @@ def test_apply_mosaic_only_inside_mask():
     assert not np.array_equal(out[8:24, 8:24], img[8:24, 8:24])  # マスク内は変化
 
 
+def test_apply_blur_only_inside_mask():
+    img = np.zeros((40, 40, 3), np.uint8)
+    img[:] = 100
+    # マスク内に高周波パターン（市松）を置き、ぼかしで平滑化されることを確認
+    img[10:30, 10:30] = (np.indices((20, 20)).sum(0) % 2)[..., None].astype(np.uint8) * 255
+    mask = np.zeros((40, 40), np.uint8)
+    mask[10:30, 10:30] = 255
+    out = ac.apply_blur(img, mask, sigma=5)
+    assert np.all(out[0, 0] == 100)                       # マスク外は不変
+    assert not np.array_equal(out[10:30, 10:30], img[10:30, 10:30])  # マスク内は変化
+    # ぼかし後は市松の高周波が減る（分散が下がる）
+    assert out[10:30, 10:30].var() < img[10:30, 10:30].var()
+
+
 def test_face_bands_top_of_person():
     m = np.zeros((300, 300), np.uint8)
     m[50:250, 100:180] = 255   # 高さ200,幅80 の人物塊（面積>min）
