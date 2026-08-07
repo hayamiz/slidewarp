@@ -116,3 +116,33 @@ def parse_confidence(stdout: str) -> dict[str, float]:
         if m:
             result[m.group(1).strip()] = float(m.group(2))
     return result
+
+
+@dataclass
+class VerifyResult:
+    passed: bool
+    reasons: list[str] = field(default_factory=list)
+    quad_drift_px: float = 0.0
+    conf_delta: float = 0.0
+
+
+def compare(orig, anon, orig_conf, anon_conf, img_long_side,
+            quad_tol_frac=0.01, conf_tol=0.03) -> VerifyResult:
+    reasons: list[str] = []
+    drift = float("inf")
+    if orig.quad is None or anon.quad is None:
+        reasons.append("quad 未検出（元または匿名化版で検出できず）")
+    else:
+        drift = float(np.max(np.linalg.norm(orig.quad - anon.quad, axis=1)))
+        if drift >= quad_tol_frac * img_long_side:
+            reasons.append(f"quad ズレ {drift:.1f}px >= 許容 {quad_tol_frac * img_long_side:.1f}px")
+    if orig.method != anon.method:
+        reasons.append(f"method 不一致 {orig.method}->{anon.method}")
+    if orig.aspect != anon.aspect:
+        reasons.append(f"aspect 不一致 {orig.aspect}->{anon.aspect}")
+    conf_delta = abs(float(orig_conf) - float(anon_conf))
+    if conf_delta >= conf_tol:
+        reasons.append(f"conf 差 {conf_delta:.3f} >= 許容 {conf_tol}")
+    return VerifyResult(passed=not reasons, reasons=reasons,
+                        quad_drift_px=(0.0 if drift == float('inf') else drift),
+                        conf_delta=conf_delta)

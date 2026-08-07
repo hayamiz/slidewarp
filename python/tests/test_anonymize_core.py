@@ -82,3 +82,33 @@ def test_parse_confidence_with_spaced_name():
     c = ac.parse_confidence(out)
     assert c["2026-06-23 08.44.43.jpg"] == 0.87
     assert c["x.jpg"] == 0.20
+
+
+def _dg(method="hough", aspect="16:9", quad=((0, 0), (100, 0), (100, 60), (0, 60))):
+    return ac.DumpGeom(method, aspect, None if quad is None else np.array(quad, np.float32))
+
+
+def test_compare_pass_when_identical():
+    r = ac.compare(_dg(), _dg(), 0.80, 0.80, img_long_side=1000)
+    assert r.passed
+    assert r.reasons == []
+
+
+def test_compare_fail_on_quad_drift():
+    moved = _dg(quad=((0, 0), (100, 0), (100, 60), (0, 90)))  # 隅が30pxずれ
+    r = ac.compare(_dg(), moved, 0.80, 0.80, img_long_side=1000)  # tol=10px
+    assert not r.passed
+    assert any("quad" in x for x in r.reasons)
+    assert r.quad_drift_px >= 29
+
+
+def test_compare_fail_on_method_and_conf():
+    r = ac.compare(_dg(method="hough"), _dg(method="contour"), 0.80, 0.70, img_long_side=1000)
+    assert not r.passed
+    assert any("method" in x for x in r.reasons)
+    assert any("conf" in x for x in r.reasons)
+
+
+def test_compare_fail_on_missing_quad():
+    r = ac.compare(_dg(), _dg(quad=None), 0.8, 0.8, img_long_side=1000)
+    assert not r.passed
