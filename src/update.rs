@@ -21,10 +21,17 @@ fn configure() -> Result<Box<dyn self_update::update::ReleaseUpdate>> {
         .repo_name(REPO)
         .bin_name(BIN)
         .target(target)
-        // 資産の中身は `slidewarp-<tag>-<target>/slidewarp` と入れ子。
-        .bin_path_in_archive("slidewarp-{{ version }}-{{ target }}/slidewarp")
+        // asset をターゲット三つ組の完全一致で選ぶ。identifier を付けないと
+        // self_update のフォールバック（name が OS と ARCH を含めば一致）が働き、
+        // 同一 arch の別 libc 資産（例: musl 環境で linux-gnu 資産）を誤選択しうる。
+        .identifier(target)
+        // 資産の中身は `slidewarp-v<version>-<target>/slidewarp` と入れ子。
+        // self_update の {{ version }} は tag の先頭 'v' を除いた値になるため、
+        // アーカイブ内ディレクトリ名（タグ = v 付き）に合わせてリテラル 'v' を前置する。
+        .bin_path_in_archive("slidewarp-v{{ version }}-{{ target }}/slidewarp")
         .current_version(env!("CARGO_PKG_VERSION"))
         .show_download_progress(true)
+        .show_output(false) // self_update の英語ログを抑制（出力は自前の日本語に統一）
         .no_confirm(true) // 確認は run_update 側で行う
         .build()
         .map_err(|e| anyhow!("自己更新の初期化に失敗しました: {e}"))
@@ -124,3 +131,4 @@ mod tests {
         assert!(!newer_available("1.0.0", "v1.0.0").unwrap());
     }
 }
+
