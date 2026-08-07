@@ -5,6 +5,7 @@ mod detect;
 mod enhance;
 mod geometry;
 mod report;
+mod update;
 mod warp;
 
 #[global_allocator]
