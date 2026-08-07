@@ -65,3 +65,15 @@ def strip_and_write(img_bgr: np.ndarray, out_path, quality: int = 95) -> None:
     ok = cv2.imwrite(str(p), img_bgr, params)
     if not ok:
         raise RuntimeError(f"書き出し失敗: {p}")
+
+
+def face_bands_from_person_mask(person_mask, band, min_area=400):
+    """人物マスクの連結成分ごとに bbox 上部 band 割合を顔矩形として返す。"""
+    n, _, stats, _ = cv2.connectedComponentsWithStats((person_mask > 0).astype(np.uint8), 8)
+    rects = []
+    for i in range(1, n):  # 0 は背景
+        x, y, w, h, area = stats[i]
+        if area < min_area:
+            continue
+        rects.append((int(x), int(y), int(w), max(1, int(h * float(band)))))
+    return rects

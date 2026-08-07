@@ -45,3 +45,19 @@ def test_apply_mosaic_only_inside_mask():
     out = ac.apply_mosaic(img, mask, block=8)
     assert np.all(out[0, 0] == 100)          # マスク外は不変
     assert not np.array_equal(out[8:24, 8:24], img[8:24, 8:24])  # マスク内は変化
+
+
+def test_face_bands_top_of_person():
+    m = np.zeros((300, 300), np.uint8)
+    m[50:250, 100:180] = 255   # 高さ200,幅80 の人物塊（面積>min）
+    rects = ac.face_bands_from_person_mask(m, band=0.25, min_area=400)
+    assert len(rects) == 1
+    x, y, w, h = rects[0]
+    assert (x, y, w) == (100, 50, 80)
+    assert h == int(200 * 0.25)   # 上部25% = 50px
+
+
+def test_face_bands_skips_small_blobs():
+    m = np.zeros((100, 100), np.uint8)
+    m[10:15, 10:15] = 255         # 面積25 < min_area
+    assert ac.face_bands_from_person_mask(m, band=0.25, min_area=400) == []
