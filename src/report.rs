@@ -280,12 +280,16 @@ mod tests {
 
     #[test]
     fn thumb_data_uri_from_temp_png() {
-        use image::{RgbImage, Rgb};
+        use image::{RgbImage, Rgb, GenericImageView};
         let mut img = RgbImage::new(1200, 900);
         for p in img.pixels_mut() { *p = Rgb([10, 20, 200]); }
         let dir = std::env::temp_dir();
         let path = dir.join("slidewarp_thumb_test.png");
         img.save(&path).unwrap();
+        // resize は縦横比を保持する（正方形化しない）ことを保証する回帰ガード。
+        let resized = image::open(&path).unwrap().resize(480, 480, image::imageops::FilterType::Triangle);
+        assert_eq!((resized.width(), resized.height()), (480, 360),
+                   "resize must preserve aspect ratio (long edge=480), got {}x{}", resized.width(), resized.height());
         let uri = thumb_data_uri(&path, 480).expect("some uri");
         assert!(uri.starts_with("data:image/jpeg;base64,"));
         assert!(uri.len() > 200, "uri too short: {}", uri.len());
