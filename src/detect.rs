@@ -134,6 +134,32 @@ fn largest_component_bbox(mask: &GrayImage) -> Option<(u32, u32, u32, u32)> {
     bb.get(best).copied()
 }
 
+/// ダークテーマ判定: 投影面が画像の一定割合以上を占め、かつ投影面内で
+/// 明部(brightness_mask)が占める割合が小さい（＝スライド全体が暗い）とき真。
+fn is_dark_theme(gray: &GrayImage, bright: &GrayImage, screen_bbox: (u32, u32, u32, u32)) -> bool {
+    let (w, h) = gray.dimensions();
+    let (x0, y0, x1, y1) = screen_bbox;
+    let bw = (x1 - x0 + 1) as f64;
+    let bh = (y1 - y0 + 1) as f64;
+    let screen_ratio = (bw * bh) / ((w * h) as f64);
+    if screen_ratio < 0.10 {
+        return false; // 投影面が小さすぎる（遠景等）は対象外
+    }
+    let mut bright_in = 0u32;
+    let mut total = 0u32;
+    for y in y0..=y1 {
+        for x in x0..=x1 {
+            total += 1;
+            if bright.get_pixel(x, y)[0] > 0 {
+                bright_in += 1;
+            }
+        }
+    }
+    let bright_frac = if total > 0 { (bright_in as f64) / (total as f64) } else { 0.0 };
+    // 投影面の半分未満しか「明部」でない＝ダークテーマ
+    bright_frac < 0.5
+}
+
 /// マスク内部の閉じた暗領域を前景で埋める（外周に開いた暗部は埋めない）。
 pub fn fill_holes(mask: &GrayImage) -> GrayImage {
     let (w, h) = mask.dimensions();
@@ -1084,5 +1110,25 @@ mod dark_tests {
     fn largest_component_bbox_none_on_empty() {
         let m = GrayImage::from_pixel(10, 10, Luma([0]));
         assert!(largest_component_bbox(&m).is_none());
+    }
+
+    #[test]
+    fn dark_theme_true_for_dark_slide() {
+        let g = synth_dark();
+        let bright = brightness_mask(&g);
+        let sm = screen_mask(&g);
+        let bb = largest_component_bbox(&sm).unwrap();
+        assert!(is_dark_theme(&g, &bright, bb), "dark slide should be dark theme");
+    }
+
+    #[test]
+    fn dark_theme_false_for_bright_slide() {
+        // 全面が明るい(値210)スライド = 明るいテーマ
+        let mut g = image::GrayImage::from_pixel(400, 300, image::Luma([12]));
+        for y in 50..250 { for x in 70..330 { g.put_pixel(x, y, image::Luma([210])); } }
+        let bright = brightness_mask(&g);
+        let sm = screen_mask(&g);
+        let bb = largest_component_bbox(&sm).unwrap();
+        assert!(!is_dark_theme(&g, &bright, bb), "bright slide must not be dark theme");
     }
 }
