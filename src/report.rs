@@ -313,7 +313,7 @@ mod tests {
 
     #[test]
     fn thumb_data_uri_from_temp_png() {
-        use image::{RgbImage, Rgb, GenericImageView};
+        use image::{RgbImage, Rgb};
         let mut img = RgbImage::new(1200, 900);
         for p in img.pixels_mut() { *p = Rgb([10, 20, 200]); }
         let dir = std::env::temp_dir();

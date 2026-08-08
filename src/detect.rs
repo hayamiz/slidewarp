@@ -130,13 +130,17 @@ fn largest_component_bbox(mask: &GrayImage) -> Option<(u32, u32, u32, u32)> {
             e.3 = e.3.max(y);
         }
     }
-    let best = area.iter().max_by_key(|(_, &a)| a)?.0;
-    bb.get(best).copied()
+    let best = *area.iter().max_by_key(|(&l, &a)| (a, std::cmp::Reverse(l)))?.0;
+    bb.get(&best).copied()
 }
 
 /// ダークテーマ判定: 投影面が画像の一定割合以上を占め、かつ投影面内で
 /// 明部(brightness_mask)が占める割合が小さい（＝スライド全体が暗い）とき真。
 fn is_dark_theme(gray: &GrayImage, bright: &GrayImage, screen_bbox: (u32, u32, u32, u32)) -> bool {
+    debug_assert!(
+        screen_bbox.2 >= screen_bbox.0 && screen_bbox.3 >= screen_bbox.1,
+        "screen_bbox must be ordered (min_x,min_y,max_x,max_y)"
+    );
     let (w, h) = gray.dimensions();
     let (x0, y0, x1, y1) = screen_bbox;
     let bw = (x1 - x0 + 1) as f64;
@@ -383,7 +387,10 @@ fn hough_candidates(
 ) -> Vec<geo::Quad> {
     let (w, h) = gray.dimensions();
     let (bx, by, bw, bh) = match bbox_override.or_else(|| bright_bbox(mask)) {
-        Some((x0, y0, x1, y1)) => (x0, y0, x1 - x0 + 1, y1 - y0 + 1),
+        Some((x0, y0, x1, y1)) => {
+            debug_assert!(x1 >= x0 && y1 >= y0, "hough bbox must be ordered");
+            (x0, y0, x1 - x0 + 1, y1 - y0 + 1)
+        }
         None => return Vec::new(),
     };
     let mx = (0.18 * bw as f64) as i32;
