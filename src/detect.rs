@@ -375,9 +375,14 @@ fn polar_intersection(a: &PolarLine, b: &PolarLine) -> Option<[f64; 2]> {
     Some([x, y])
 }
 
-fn hough_candidates(gray: &GrayImage, mask: &GrayImage, ignore: Option<&GrayImage>) -> Vec<geo::Quad> {
+fn hough_candidates(
+    gray: &GrayImage,
+    mask: &GrayImage,
+    ignore: Option<&GrayImage>,
+    bbox_override: Option<(u32, u32, u32, u32)>,
+) -> Vec<geo::Quad> {
     let (w, h) = gray.dimensions();
-    let (bx, by, bw, bh) = match bright_bbox(mask) {
+    let (bx, by, bw, bh) = match bbox_override.or_else(|| bright_bbox(mask)) {
         Some((x0, y0, x1, y1)) => (x0, y0, x1 - x0 + 1, y1 - y0 + 1),
         None => return Vec::new(),
     };
@@ -983,6 +988,11 @@ pub fn detect_slide(img: &RgbImage, ignore_mask: Option<&GrayImage>) -> Detectio
     let (w, h) = gray.dimensions();
     let mask = brightness_mask(&gray);
     let mask_filled = fill_holes(&mask);
+    let s_mask = screen_mask(&gray);
+    let screen_bbox = largest_component_bbox(&s_mask);
+    let dark = screen_bbox
+        .map(|bb| is_dark_theme(&gray, &mask, bb))
+        .unwrap_or(false);
     let gray_blur = gaussian_blur_f32(&gray, 1.5);
     let edges_base = canny(&gray, 50.0, 150.0);
     let edges_lo = canny(&gray, 40.0, 120.0);
@@ -1000,8 +1010,19 @@ pub fn detect_slide(img: &RgbImage, ignore_mask: Option<&GrayImage>) -> Detectio
     for q in contour_candidates(&gray, &mask, &edges_base) {
         raw.push((q, "contour"));
     }
-    for q in hough_candidates(&gray, &mask, None) {
+    for q in hough_candidates(&gray, &mask, None, None) {
         raw.push((q, "hough"));
+    }
+    // ダークテーマ時: 投影領域マスク/ bbox からも全スライド候補を生成してマージ
+    if dark {
+        if let Some(bb) = screen_bbox {
+            for q in hough_candidates(&gray, &mask, None, Some(bb)) {
+                raw.push((q, "hough"));
+            }
+        }
+        for q in contour_candidates(&gray, &s_mask, &edges_base) {
+            raw.push((q, "contour"));
+        }
     }
     if let Some(q) = min_area_rect_of(&mask) {
         raw.push((q, "minrect"));
@@ -1020,7 +1041,7 @@ pub fn detect_slide(img: &RgbImage, ignore_mask: Option<&GrayImage>) -> Detectio
         }) {
             raw.push((q, "contour"));
         }
-        for q in hough_candidates(&gray, &mask, Some(ig)) {
+        for q in hough_candidates(&gray, &mask, Some(ig), None) {
             raw.push((q, "hough"));
         }
     }
