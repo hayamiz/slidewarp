@@ -3,6 +3,7 @@
 
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use std::io::Cursor;
 use std::path::Path;
 
 use serde::Serialize;
@@ -245,6 +246,16 @@ fn url_encode_path(s: &str) -> String {
     out
 }
 
+fn thumb_data_uri(abs: &std::path::Path, max_side: u32) -> Option<String> {
+    let img = image::open(abs).ok()?;
+    let thumb = img.resize(max_side, max_side, image::imageops::FilterType::Triangle);
+    let rgb = thumb.to_rgb8();
+    let mut buf: Vec<u8> = Vec::new();
+    let mut enc = image::codecs::jpeg::JpegEncoder::new_with_quality(Cursor::new(&mut buf), 70);
+    enc.encode_image(&rgb).ok()?;
+    Some(format!("data:image/jpeg;base64,{}", base64_encode(&buf)))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -265,5 +276,20 @@ mod tests {
         assert_eq!(url_encode_path("2026-08-04 09.15.43.jpg"), "2026-08-04%2009.15.43.jpg");
         assert_eq!(url_encode_path("../a b/c.jpg"), "../a%20b/c.jpg");
         assert_eq!(url_encode_path("plain_file-1.0~x.jpg"), "plain_file-1.0~x.jpg");
+    }
+
+    #[test]
+    fn thumb_data_uri_from_temp_png() {
+        use image::{RgbImage, Rgb};
+        let mut img = RgbImage::new(1200, 900);
+        for p in img.pixels_mut() { *p = Rgb([10, 20, 200]); }
+        let dir = std::env::temp_dir();
+        let path = dir.join("slidewarp_thumb_test.png");
+        img.save(&path).unwrap();
+        let uri = thumb_data_uri(&path, 480).expect("some uri");
+        assert!(uri.starts_with("data:image/jpeg;base64,"));
+        assert!(uri.len() > 200, "uri too short: {}", uri.len());
+        assert!(thumb_data_uri(std::path::Path::new("/no/such/file.png"), 480).is_none());
+        let _ = std::fs::remove_file(&path);
     }
 }
