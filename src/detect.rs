@@ -657,6 +657,8 @@ pub fn score_quad(
     mask_filled: &GrayImage,
     edges_dil: &GrayImage,
     gray_blur: &GrayImage,
+    dark: bool,
+    screen_mask: &GrayImage,
 ) -> Option<(f64, Parts)> {
     if !geo::is_convex(quad) {
         return None;
@@ -676,13 +678,17 @@ pub fn score_quad(
         (1.0 - (aspect - 4.0 / 3.0).abs() / (4.0 / 3.0)).clamp(0.0, 1.0)
     };
     let contrast = contrast_of(quad, gray);
-    let (inside_area, bright_inside, _, _) = count_inside(quad, w, h, Some(mask_filled));
+    // ダーク時は「明部mask」でなく「投影領域mask」で fill/cut を評価する。
+    // これにより暗く一様なスライド内部が不当に低fillにならず（逆転解消）、
+    // かつ内部小矩形の両側が投影面内＝cut が発火して sub-slide を減点できる。
+    let fill_mask: &GrayImage = if dark { screen_mask } else { mask_filled };
+    let (inside_area, bright_inside, _, _) = count_inside(quad, w, h, Some(fill_mask));
     let fill = if inside_area > 0.0 {
         bright_inside / inside_area
     } else {
         0.0
     };
-    let (edge, cut) = edge_profile(quad, edges_dil, mask_filled, gray_blur);
+    let (edge, cut) = edge_profile(quad, edges_dil, fill_mask, gray_blur);
     let cut_score = 1.0 - (1.5 * cut).min(1.0);
 
     let score = 0.12 * area_score
@@ -1049,7 +1055,7 @@ pub fn detect_slide(img: &RgbImage, ignore_mask: Option<&GrayImage>) -> Detectio
     // 候補は work 座標で保持し、選択後に上辺リファインを掛けてから元解像度へ戻す。
     let mut best: Option<Cand> = None;
     for (q, method) in raw {
-        if let Some((mut score, parts)) = score_quad(&q, w, h, &gray, &mask_filled, &edges_dil, &gray_blur) {
+        if let Some((mut score, parts)) = score_quad(&q, w, h, &gray, &mask_filled, &edges_dil, &gray_blur, dark, &s_mask) {
             if method == "minrect" {
                 score *= 0.6;
             }
