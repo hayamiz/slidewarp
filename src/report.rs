@@ -189,7 +189,7 @@ function render(){
 }
 function makeCard(it,r){
   const card=document.createElement("div"); card.className="card";
-  const outImg=it.out_thumb?`<div class="imgwrap"><img loading="lazy" src="${it.out_thumb}" data-full="${it.out||""}" alt=""></div>`:`<p class="meta">出力なし（${it.status}）</p>`;
+  const outImg=it.out?`<div class="imgwrap"><img loading="lazy" src="${it.out_thumb||it.out}" data-full="${it.out}" alt=""></div>`:`<p class="meta">出力なし（${it.status}）</p>`;
   card.innerHTML=`
     <div class="card-head">
       <span class="idx">#${String(it.id+1).padStart(2,"0")}</span>
