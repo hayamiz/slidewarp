@@ -1074,6 +1074,10 @@ mod dark_tests {
         // 投影面(80..320, 60..240)にほぼ一致（close の膨張で数px外れは許容）
         assert!(bb.0 <= 85 && bb.1 <= 65 && bb.2 >= 315 && bb.3 >= 235,
                 "bbox too small: {:?}", bb);
+        // 上限も確認: 近黒の暗幕を除外できている（bbox が全フレームを飲み込んでいない）こと。
+        // 投影面は x[80,320) y[60,240)。モルフォロジの膨張を考慮しても十分な余裕を持たせる。
+        assert!(bb.0 >= 40 && bb.1 >= 30 && bb.2 <= 360 && bb.3 <= 280,
+                "bbox swallowed the near-black drape (should exclude background): {:?}", bb);
     }
 
     #[test]
