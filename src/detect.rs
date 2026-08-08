@@ -85,6 +85,55 @@ pub fn brightness_mask(gray: &GrayImage) -> GrayImage {
     open(&mask, Norm::LInf, 4)
 }
 
+/// プロジェクタ投影領域マスク（テーマ非依存）。暗幕/室内の「ほぼ黒」に対し、
+/// ダークテーマでも真っ黒にならず暗グレーで浮く投影面を、低しきい値で前景化する。
+/// 強めの close で内部の暗い図版ごと投影面を1塊にする（bbox 取得が目的）。
+pub fn screen_mask(gray: &GrayImage) -> GrayImage {
+    let blur = gaussian_blur_f32(gray, 2.0);
+    // 準黒(暗幕)と暗グレー(投影面)を分ける低しきい値。大津の下側寄り、下限28/上限90でクランプ。
+    // ⚠ otsu は「非ブラー」の gray から取る（ブラー後だと投影面内部の明るい図版とのコントラストで
+    // 大津の分割点が {暗幕,投影面}|{明部} 側にシフトし、投影面自体が暗幕側へ誤分類され得る）。
+    let otsu = otsu_level(gray) as f64;
+    let thr = ((otsu * 0.5) as u32).clamp(28, 90) as u8;
+    let mut mask = GrayImage::new(gray.width(), gray.height());
+    for (m, b) in mask.pixels_mut().zip(blur.pixels()) {
+        m[0] = if b[0] >= thr { 255 } else { 0 };
+    }
+    // 投影面内部の暗い切れ目を埋めて1塊化（半径6の close×2）。
+    let mask = close(&mask, Norm::LInf, 6);
+    let mask = close(&mask, Norm::LInf, 6);
+    open(&mask, Norm::LInf, 3)
+}
+
+/// 前景(>0)の最大連結成分の bbox。連結成分が無ければ None。
+fn largest_component_bbox(mask: &GrayImage) -> Option<(u32, u32, u32, u32)> {
+    let (w, h) = mask.dimensions();
+    let labels = imageproc::region_labelling::connected_components(
+        mask,
+        imageproc::region_labelling::Connectivity::Four,
+        Luma([0u8]),
+    );
+    // ラベルごとの面積と bbox を集計
+    let mut area: std::collections::HashMap<u32, u32> = std::collections::HashMap::new();
+    let mut bb: std::collections::HashMap<u32, (u32, u32, u32, u32)> = std::collections::HashMap::new();
+    for y in 0..h {
+        for x in 0..w {
+            let l = labels.get_pixel(x, y)[0];
+            if l == 0 {
+                continue;
+            }
+            *area.entry(l).or_insert(0) += 1;
+            let e = bb.entry(l).or_insert((x, y, x, y));
+            e.0 = e.0.min(x);
+            e.1 = e.1.min(y);
+            e.2 = e.2.max(x);
+            e.3 = e.3.max(y);
+        }
+    }
+    let best = area.iter().max_by_key(|(_, &a)| a)?.0;
+    bb.get(best).copied()
+}
+
 /// マスク内部の閉じた暗領域を前景で埋める（外周に開いた暗部は埋めない）。
 pub fn fill_holes(mask: &GrayImage) -> GrayImage {
     let (w, h) = mask.dimensions();
@@ -1000,5 +1049,36 @@ pub fn detect_slide(img: &RgbImage, ignore_mask: Option<&GrayImage>) -> Detectio
             method: "none".to_string(),
             parts: None,
         },
+    }
+}
+
+#[cfg(test)]
+mod dark_tests {
+    use super::*;
+    use image::{GrayImage, Luma};
+
+    // 準黒背景(値8)の中央に暗グレー(値55)の矩形 = 投影面を模す
+    fn synth_dark() -> GrayImage {
+        let mut g = GrayImage::from_pixel(400, 300, Luma([8]));
+        for y in 60..240 { for x in 80..320 { g.put_pixel(x, y, Luma([55])); } }
+        // 内部の明るい要素(値230)
+        for y in 100..160 { for x in 120..200 { g.put_pixel(x, y, Luma([230])); } }
+        g
+    }
+
+    #[test]
+    fn screen_mask_captures_whole_projection() {
+        let g = synth_dark();
+        let m = screen_mask(&g);
+        let bb = largest_component_bbox(&m).expect("bbox");
+        // 投影面(80..320, 60..240)にほぼ一致（close の膨張で数px外れは許容）
+        assert!(bb.0 <= 85 && bb.1 <= 65 && bb.2 >= 315 && bb.3 >= 235,
+                "bbox too small: {:?}", bb);
+    }
+
+    #[test]
+    fn largest_component_bbox_none_on_empty() {
+        let m = GrayImage::from_pixel(10, 10, Luma([0]));
+        assert!(largest_component_bbox(&m).is_none());
     }
 }
