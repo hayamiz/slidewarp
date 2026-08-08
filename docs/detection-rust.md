@@ -125,6 +125,27 @@ flowchart TD
 重みを調整する際はこの2項の役割を崩さないこと。`contrast`（内部が暗い会場に対し明るい）も、内部小矩形が
 低スコアになる方向に効く補助項。
 
+### 4.1 ダークテーマ対応（投影領域マスクと theme-aware スコアリング）
+
+上記の候補生成・スコアは「暗い会場の中の明るいスライド」を前提とする。**ダークテーマ**（暗背景に
+明るい図/写真/グラフだけが浮くスライド）ではこの前提が崩れ、`brightness_mask` が内部の明るい要素だけを
+拾う→ hough ROI・contour が内部要素に寄る／`fill` が暗い全スライドを低評価し内部要素を高評価／`cut` は
+内部要素の外側が暗く発火しない、と一貫して **sub-slide（内部だけ切り出す）** に倒れる。対策は2段構え、
+いずれも**ダーク判定が真のときだけ発火**し、明るいスライドの経路は不変（回帰ゼロを構造的に担保）:
+
+- **投影領域マスク** `screen_mask`（`src/detect.rs:91`）: 暗幕/室内の「ほぼ黒」より上（暗グレー以上）を
+  低しきい値で前景化し、強めの close で投影面を1塊にする。しきい値の大津は**ぼかし前の gray** から取る
+  （ぼかし後だと合成境界で内部要素側に寄るため）。最大連結成分の bbox を `largest_component_bbox`
+  （`src/detect.rs:109`）で得る。
+- **ダーク判定** `is_dark_theme`（`src/detect.rs:143`）: 投影面が画像の一定割合以上（`screen_ratio>=0.10`）
+  かつ投影面内で `brightness_mask` の占有が半分未満（`bright_frac<0.5`）のとき真。
+- **デュアル候補生成**（`detect_slide` 内, ダーク時）: `hough_candidates` に bbox を明示指定できる引数を追加
+  （`src/detect.rs:378`）し、投影領域 bbox からも hough を、`screen_mask` からも contour を生成して候補へマージ。
+- **theme-aware スコアリング**（`score_quad`, `src/detect.rs:684`）: ダーク時は `fill` と `cut`（`edge_profile`
+  の `bright` 引数）を `mask_filled` でなく `screen_mask` で評価する。これで全スライド quad の `fill` 逆転が
+  解消し、内部小矩形は両側が投影面内となって `cut` が発火し減点される。`dark==false` では `fill_mask ==
+  mask_filled` なので採点は現行と完全同一。
+
 ## 5. 上下辺リファイン
 
 検出確定後の後処理。候補生成・スコアリングを一切変えず、選択済み quad の上辺/下辺だけを法線方向へ延ばす
