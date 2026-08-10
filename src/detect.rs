@@ -188,7 +188,7 @@ pub fn fill_holes(mask: &GrayImage) -> GrayImage {
         }
     }
     while let Some((x, y)) = stack.pop() {
-        let mut push = |nx: u32, ny: u32, st: &mut Vec<(u32, u32)>, rc: &mut Vec<bool>| {
+        let push = |nx: u32, ny: u32, st: &mut Vec<(u32, u32)>, rc: &mut Vec<bool>| {
             if mask.get_pixel(nx, ny)[0] == 0 && !rc[idx(nx, ny)] {
                 rc[idx(nx, ny)] = true;
                 st.push((nx, ny));
