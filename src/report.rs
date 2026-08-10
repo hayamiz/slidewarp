@@ -38,19 +38,68 @@ struct SerItem {
     parts: serde_json::Value,
 }
 
+/// 全件の軽量インデックス（サムネなし）。ページ分割時に各ページへ埋め込み、
+/// どのページからでも全件のエクスポート・進捗集計ができるようにする。
+#[derive(Serialize, Clone)]
+struct SerAll {
+    id: usize,
+    name: String,
+    status: String,
+    method: String,
+    confidence: f64,
+}
+
 #[derive(Serialize)]
 struct SerData {
     items: Vec<SerItem>,
+    all: Option<Vec<SerAll>>,
+    page: usize,
+    pages: usize,
     project: String,
     gen: String,
 }
+
+/// 1 ページあたりの最大件数。ファイル数が多いと 1 枚の report.html に全サムネイルを
+/// 埋め込むためブラウザが重くなるので、この件数ごとに report.html / report-2.html /
+/// report-3.html ... と分割して出力する。
+const PAGE_SIZE: usize = 50;
 
 pub fn write_report(items: Vec<Item>, out_dir: &Path) -> std::io::Result<std::path::PathBuf> {
     let mut hasher = DefaultHasher::new();
     for it in &items {
         format!("{}:{}:{}:{}", it.name, it.confidence, it.method, it.status).hash(&mut hasher);
     }
+    // gen はページ分割によらず全件から算出（localStorage キーが全ページで共通になり、
+    // どのページで入力した評価も 1 つのストアに集約・永続化される）。
     let gen = format!("{:012x}", hasher.finish() & 0xffff_ffff_ffff);
+    let project = out_dir
+        .canonicalize()
+        .unwrap_or_else(|_| out_dir.to_path_buf())
+        .display()
+        .to_string();
+
+    let total = items.len();
+    let pages = total.div_ceil(PAGE_SIZE).max(1);
+
+    let all: Option<Vec<SerAll>> = if pages > 1 {
+        Some(
+            items
+                .iter()
+                .map(|it| SerAll {
+                    id: it.id,
+                    name: it.name.clone(),
+                    status: it.status.clone(),
+                    method: it.method.clone(),
+                    confidence: it.confidence,
+                })
+                .collect(),
+        )
+    } else {
+        None
+    };
+
+    // 表示用（サムネ入り）を SerItem に変換し、消費しながら PAGE_SIZE 件ずつ切り出す
+    // （重いサムネイル文字列を複製しないよう by_ref().take() で分割）。
     let ser: Vec<SerItem> = items
         .into_iter()
         .map(|it| SerItem {
@@ -67,21 +116,38 @@ pub fn write_report(items: Vec<Item>, out_dir: &Path) -> std::io::Result<std::pa
             parts: it.parts,
         })
         .collect();
-    let data = SerData {
-        items: ser,
-        project: out_dir.canonicalize().unwrap_or_else(|_| out_dir.to_path_buf()).display().to_string(),
-        gen,
-    };
-    let payload = serde_json::to_string(&data)
-        .unwrap()
-        .replace("</", "<\\/")
-        .replace('\u{2028}', "\\u2028")
-        .replace('\u{2029}', "\\u2029");
-    let html = TEMPLATE.replace("/*__DATA__*/", &payload);
+
     std::fs::create_dir_all(out_dir)?;
-    let path = out_dir.join("report.html");
-    std::fs::write(&path, html)?;
-    Ok(path)
+    let mut iter = ser.into_iter();
+    let mut first_path = out_dir.join("report.html");
+    for page in 1..=pages {
+        let page_items: Vec<SerItem> = iter.by_ref().take(PAGE_SIZE).collect();
+        let data = SerData {
+            items: page_items,
+            all: all.clone(),
+            page,
+            pages,
+            project: project.clone(),
+            gen: gen.clone(),
+        };
+        let payload = serde_json::to_string(&data)
+            .unwrap()
+            .replace("</", "<\\/")
+            .replace('\u{2028}', "\\u2028")
+            .replace('\u{2029}', "\\u2029");
+        let html = TEMPLATE.replace("/*__DATA__*/", &payload);
+        let fname = if page == 1 {
+            "report.html".to_string()
+        } else {
+            format!("report-{page}.html")
+        };
+        let path = out_dir.join(&fname);
+        std::fs::write(&path, html)?;
+        if page == 1 {
+            first_path = path;
+        }
+    }
+    Ok(first_path)
 }
 
 const TEMPLATE: &str = r####"<!doctype html>
@@ -139,6 +205,9 @@ const TEMPLATE: &str = r####"<!doctype html>
   dialog img { max-width:96vw; max-height:96vh; border-radius:12px; }
   dialog::backdrop { background:rgba(0,0,0,.85); }
   select { font:inherit; padding:6px 8px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--fg); }
+  #pager a { color:var(--accent); text-decoration:none; margin:0 2px; }
+  #pager a:hover { text-decoration:underline; }
+  #pager b { margin:0 2px; }
 </style>
 </head>
 <body>
@@ -154,6 +223,7 @@ const TEMPLATE: &str = r####"<!doctype html>
   <span class="sp"></span>
   <span class="stat" id="progress"></span>
   <span class="stat" id="avg"></span>
+  <span class="stat" id="pager"></span>
   <button id="import">JSON取込</button>
   <button id="csv">CSV出力</button>
   <button id="export" class="primary">JSON出力</button>
@@ -165,6 +235,19 @@ const TEMPLATE: &str = r####"<!doctype html>
 <script>
 const DATA = /*__DATA__*/;
 const KEY = "slidewarp-eval:" + DATA.project + ":" + (DATA.gen || "");
+// 全ページ共通の全件インデックス（分割時は DATA.all、単一ページ時は DATA.items）。
+// 集計・エクスポート・取込は全件に対して行い、表示のみページ分の DATA.items を使う。
+const ALL = DATA.all || DATA.items;
+function pageFile(n){ return n===1 ? "report.html" : "report-"+n+".html"; }
+function renderPager(){
+  const el=document.getElementById("pager"); if(!el) return;
+  if(!DATA.pages || DATA.pages<=1){ el.textContent=""; return; }
+  const parts=[`ページ ${DATA.page}/${DATA.pages}:`];
+  if(DATA.page>1) parts.push(`<a href="${pageFile(DATA.page-1)}">← 前</a>`);
+  for(let n=1;n<=DATA.pages;n++) parts.push(n===DATA.page?`<b>${n}</b>`:`<a href="${pageFile(n)}">${n}</a>`);
+  if(DATA.page<DATA.pages) parts.push(`<a href="${pageFile(DATA.page+1)}">次 →</a>`);
+  el.innerHTML=parts.join(" ");
+}
 const RATE_FIELDS = [
   {key:"crop", label:"切り出し位置（幾何補正）"},
   {key:"look", label:"見た目（色調/露出/シャープ）"},
@@ -227,22 +310,23 @@ function rateHtml(id,f,cur){
 }
 function flash(id){const el=document.querySelector(`[data-saved="${id}"]`);if(!el)return;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),900);}
 function updateStats(){
-  const n=DATA.items.length; let rated=0,cs=0,cn=0,ls=0,ln=0;
-  for(const it of DATA.items){const r=store[it.id];if(!r)continue;
+  const n=ALL.length; let rated=0,cs=0,cn=0,ls=0,ln=0;
+  for(const it of ALL){const r=store[it.id];if(!r)continue;
     if(r.crop!=null||r.look!=null||(r.comment||"").trim()!=="")rated++;
     if(typeof r.crop==="number"){cs+=r.crop;cn++;} if(typeof r.look==="number"){ls+=r.look;ln++;}}
   document.getElementById("progress").innerHTML=`評価 <b>${rated}</b>/${n}`;
   document.getElementById("avg").innerHTML=`平均 切り出し <b>${cn?(cs/cn).toFixed(2):"-"}</b> / 見た目 <b>${ln?(ls/ln).toFixed(2):"-"}</b>`;
 }
 function download(name,text,type){const b=new Blob([text],{type});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
-function exportRows(){return DATA.items.map(it=>{const r=store[it.id]||{};return {name:it.name,status:it.status,method:it.method,confidence:it.confidence,crop:r.crop??"",look:r.look??"",comment:(r.comment||"").replace(/\r?\n/g," ")};});}
+function exportRows(){return ALL.map(it=>{const r=store[it.id]||{};return {name:it.name,status:it.status,method:it.method,confidence:it.confidence,crop:r.crop??"",look:r.look??"",comment:(r.comment||"").replace(/\r?\n/g," ")};});}
 document.getElementById("export").onclick=()=>download("slidewarp-eval.json",JSON.stringify(exportRows(),null,2),"application/json");
 document.getElementById("csv").onclick=()=>{const rows=exportRows();const head=["name","status","method","confidence","crop","look","comment"];const e=s=>`"${String(s).replace(/"/g,'""')}"`;const csv=[head.join(",")].concat(rows.map(r=>head.map(h=>e(r[h])).join(","))).join("\n");download("slidewarp-eval.csv","﻿"+csv,"text/csv");};
 document.getElementById("import").onclick=()=>document.getElementById("importfile").click();
-document.getElementById("importfile").onchange=(ev)=>{const f=ev.target.files[0];if(!f)return;const fr=new FileReader();fr.onload=()=>{try{const rows=JSON.parse(fr.result);const by={};DATA.items.forEach(it=>by[it.name]=it.id);for(const row of rows){const id=by[row.name];if(id==null)continue;store[id]={crop:row.crop===""?null:row.crop,look:row.look===""?null:row.look,comment:row.comment||""};}saveStore();render();}catch(err){alert("取込失敗: "+err);}};fr.readAsText(f);};
+document.getElementById("importfile").onchange=(ev)=>{const f=ev.target.files[0];if(!f)return;const fr=new FileReader();fr.onload=()=>{try{const rows=JSON.parse(fr.result);const by={};ALL.forEach(it=>by[it.name]=it.id);for(const row of rows){const id=by[row.name];if(id==null)continue;store[id]={crop:row.crop===""?null:row.crop,look:row.look===""?null:row.look,comment:row.comment||""};}saveStore();render();}catch(err){alert("取込失敗: "+err);}};fr.readAsText(f);};
 document.getElementById("clear").onclick=()=>{const n=Object.keys(store).length;if(!confirm(`入力済みの評価(${n}件)をすべて消去します。よろしいですか？`))return;store={};try{localStorage.removeItem(KEY);}catch(e){}render();};
 document.getElementById("filter").onchange=render;
 document.getElementById("zoom").addEventListener("click",(e)=>{if(e.target.id==="zoom")e.target.close();});
+renderPager();
 render();
 </script>
 </body>
@@ -309,6 +393,52 @@ mod tests {
         assert_eq!(url_encode_path("2026-08-04 09.15.43.jpg"), "2026-08-04%2009.15.43.jpg");
         assert_eq!(url_encode_path("../a b/c.jpg"), "../a%20b/c.jpg");
         assert_eq!(url_encode_path("plain_file-1.0~x.jpg"), "plain_file-1.0~x.jpg");
+    }
+
+    fn dummy_item(id: usize) -> Item {
+        Item {
+            id,
+            name: format!("img{id}.jpg"),
+            src: format!("img{id}.jpg"),
+            out: Some(format!("img{id}.jpg")),
+            src_abs: std::path::PathBuf::from("/no/such/src.jpg"),
+            out_abs: Some(std::path::PathBuf::from("/no/such/out.jpg")),
+            status: "ok".into(),
+            confidence: 0.9,
+            method: "hough".into(),
+            message: String::new(),
+            parts: serde_json::Value::Null,
+        }
+    }
+
+    #[test]
+    fn write_report_paginates_by_page_size() {
+        let dir = std::env::temp_dir().join(format!("slidewarp_report_test_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        // 120 件 -> 50 件ごとに 3 ページ（report.html / report-2.html / report-3.html）。
+        let items: Vec<Item> = (0..120).map(dummy_item).collect();
+        let first = write_report(items, &dir).unwrap();
+        assert_eq!(first, dir.join("report.html"));
+        assert!(dir.join("report.html").exists());
+        assert!(dir.join("report-2.html").exists());
+        assert!(dir.join("report-3.html").exists());
+        assert!(!dir.join("report-4.html").exists());
+        // 分割時は全件インデックス all と pages がページに埋め込まれる。
+        let p1 = std::fs::read_to_string(dir.join("report.html")).unwrap();
+        assert!(p1.contains("\"pages\":3"));
+        assert!(p1.contains("\"all\":["));
+
+        // 50 件ちょうど -> 1 ページのみ、all は null（単一ページでは埋め込まない）。
+        let dir2 = dir.join("single");
+        let items: Vec<Item> = (0..50).map(dummy_item).collect();
+        write_report(items, &dir2).unwrap();
+        assert!(dir2.join("report.html").exists());
+        assert!(!dir2.join("report-2.html").exists());
+        let s = std::fs::read_to_string(dir2.join("report.html")).unwrap();
+        assert!(s.contains("\"pages\":1"));
+        assert!(s.contains("\"all\":null"));
+
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]
