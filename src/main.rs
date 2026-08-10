@@ -342,6 +342,8 @@ fn main() {
                     name: r.src.file_name().and_then(|n| n.to_str()).unwrap_or("?").to_string(),
                     src: rel_path(&out_dir, &r.src),
                     out: r.out_path.as_ref().map(|p| rel_path(&out_dir, p)),
+                    src_abs: r.src.clone(),
+                    out_abs: r.out_path.clone(),
                     status: r.status.to_string(),
                     confidence: (r.confidence * 1000.0).round() / 1000.0,
                     method: r.method.clone(),

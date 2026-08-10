@@ -85,6 +85,85 @@ pub fn brightness_mask(gray: &GrayImage) -> GrayImage {
     open(&mask, Norm::LInf, 4)
 }
 
+/// プロジェクタ投影領域マスク（テーマ非依存）。暗幕/室内の「ほぼ黒」に対し、
+/// ダークテーマでも真っ黒にならず暗グレーで浮く投影面を、低しきい値で前景化する。
+/// 強めの close で内部の暗い図版ごと投影面を1塊にする（bbox 取得が目的）。
+pub fn screen_mask(gray: &GrayImage) -> GrayImage {
+    let blur = gaussian_blur_f32(gray, 2.0);
+    // 準黒(暗幕)と暗グレー(投影面)を分ける低しきい値。大津の下側寄り、下限28/上限90でクランプ。
+    // ⚠ otsu は「非ブラー」の gray から取る（ブラー後だと投影面内部の明るい図版とのコントラストで
+    // 大津の分割点が {暗幕,投影面}|{明部} 側にシフトし、投影面自体が暗幕側へ誤分類され得る）。
+    let otsu = otsu_level(gray) as f64;
+    let thr = ((otsu * 0.5) as u32).clamp(28, 90) as u8;
+    let mut mask = GrayImage::new(gray.width(), gray.height());
+    for (m, b) in mask.pixels_mut().zip(blur.pixels()) {
+        m[0] = if b[0] >= thr { 255 } else { 0 };
+    }
+    // 投影面内部の暗い切れ目を埋めて1塊化（半径6の close×2）。
+    let mask = close(&mask, Norm::LInf, 6);
+    let mask = close(&mask, Norm::LInf, 6);
+    open(&mask, Norm::LInf, 3)
+}
+
+/// 前景(>0)の最大連結成分の bbox。連結成分が無ければ None。
+fn largest_component_bbox(mask: &GrayImage) -> Option<(u32, u32, u32, u32)> {
+    let (w, h) = mask.dimensions();
+    let labels = imageproc::region_labelling::connected_components(
+        mask,
+        imageproc::region_labelling::Connectivity::Four,
+        Luma([0u8]),
+    );
+    // ラベルごとの面積と bbox を集計
+    let mut area: std::collections::HashMap<u32, u32> = std::collections::HashMap::new();
+    let mut bb: std::collections::HashMap<u32, (u32, u32, u32, u32)> = std::collections::HashMap::new();
+    for y in 0..h {
+        for x in 0..w {
+            let l = labels.get_pixel(x, y)[0];
+            if l == 0 {
+                continue;
+            }
+            *area.entry(l).or_insert(0) += 1;
+            let e = bb.entry(l).or_insert((x, y, x, y));
+            e.0 = e.0.min(x);
+            e.1 = e.1.min(y);
+            e.2 = e.2.max(x);
+            e.3 = e.3.max(y);
+        }
+    }
+    let best = *area.iter().max_by_key(|(&l, &a)| (a, std::cmp::Reverse(l)))?.0;
+    bb.get(&best).copied()
+}
+
+/// ダークテーマ判定: 投影面が画像の一定割合以上を占め、かつ投影面内で
+/// 明部(brightness_mask)が占める割合が小さい（＝スライド全体が暗い）とき真。
+fn is_dark_theme(gray: &GrayImage, bright: &GrayImage, screen_bbox: (u32, u32, u32, u32)) -> bool {
+    debug_assert!(
+        screen_bbox.2 >= screen_bbox.0 && screen_bbox.3 >= screen_bbox.1,
+        "screen_bbox must be ordered (min_x,min_y,max_x,max_y)"
+    );
+    let (w, h) = gray.dimensions();
+    let (x0, y0, x1, y1) = screen_bbox;
+    let bw = (x1 - x0 + 1) as f64;
+    let bh = (y1 - y0 + 1) as f64;
+    let screen_ratio = (bw * bh) / ((w * h) as f64);
+    if screen_ratio < 0.10 {
+        return false; // 投影面が小さすぎる（遠景等）は対象外
+    }
+    let mut bright_in = 0u32;
+    let mut total = 0u32;
+    for y in y0..=y1 {
+        for x in x0..=x1 {
+            total += 1;
+            if bright.get_pixel(x, y)[0] > 0 {
+                bright_in += 1;
+            }
+        }
+    }
+    let bright_frac = if total > 0 { (bright_in as f64) / (total as f64) } else { 0.0 };
+    // 投影面の半分未満しか「明部」でない＝ダークテーマ
+    bright_frac < 0.5
+}
+
 /// マスク内部の閉じた暗領域を前景で埋める（外周に開いた暗部は埋めない）。
 pub fn fill_holes(mask: &GrayImage) -> GrayImage {
     let (w, h) = mask.dimensions();
@@ -300,10 +379,18 @@ fn polar_intersection(a: &PolarLine, b: &PolarLine) -> Option<[f64; 2]> {
     Some([x, y])
 }
 
-fn hough_candidates(gray: &GrayImage, mask: &GrayImage, ignore: Option<&GrayImage>) -> Vec<geo::Quad> {
+fn hough_candidates(
+    gray: &GrayImage,
+    mask: &GrayImage,
+    ignore: Option<&GrayImage>,
+    bbox_override: Option<(u32, u32, u32, u32)>,
+) -> Vec<geo::Quad> {
     let (w, h) = gray.dimensions();
-    let (bx, by, bw, bh) = match bright_bbox(mask) {
-        Some((x0, y0, x1, y1)) => (x0, y0, x1 - x0 + 1, y1 - y0 + 1),
+    let (bx, by, bw, bh) = match bbox_override.or_else(|| bright_bbox(mask)) {
+        Some((x0, y0, x1, y1)) => {
+            debug_assert!(x1 >= x0 && y1 >= y0, "hough bbox must be ordered");
+            (x0, y0, x1 - x0 + 1, y1 - y0 + 1)
+        }
         None => return Vec::new(),
     };
     let mx = (0.18 * bw as f64) as i32;
@@ -577,6 +664,8 @@ pub fn score_quad(
     mask_filled: &GrayImage,
     edges_dil: &GrayImage,
     gray_blur: &GrayImage,
+    dark: bool,
+    screen_mask: &GrayImage,
 ) -> Option<(f64, Parts)> {
     if !geo::is_convex(quad) {
         return None;
@@ -596,13 +685,17 @@ pub fn score_quad(
         (1.0 - (aspect - 4.0 / 3.0).abs() / (4.0 / 3.0)).clamp(0.0, 1.0)
     };
     let contrast = contrast_of(quad, gray);
-    let (inside_area, bright_inside, _, _) = count_inside(quad, w, h, Some(mask_filled));
+    // ダーク時は「明部mask」でなく「投影領域mask」で fill/cut を評価する。
+    // これにより暗く一様なスライド内部が不当に低fillにならず（逆転解消）、
+    // かつ内部小矩形の両側が投影面内＝cut が発火して sub-slide を減点できる。
+    let fill_mask: &GrayImage = if dark { screen_mask } else { mask_filled };
+    let (inside_area, bright_inside, _, _) = count_inside(quad, w, h, Some(fill_mask));
     let fill = if inside_area > 0.0 {
         bright_inside / inside_area
     } else {
         0.0
     };
-    let (edge, cut) = edge_profile(quad, edges_dil, mask_filled, gray_blur);
+    let (edge, cut) = edge_profile(quad, edges_dil, fill_mask, gray_blur);
     let cut_score = 1.0 - (1.5 * cut).min(1.0);
 
     let score = 0.12 * area_score
@@ -908,6 +1001,11 @@ pub fn detect_slide(img: &RgbImage, ignore_mask: Option<&GrayImage>) -> Detectio
     let (w, h) = gray.dimensions();
     let mask = brightness_mask(&gray);
     let mask_filled = fill_holes(&mask);
+    let s_mask = screen_mask(&gray);
+    let screen_bbox = largest_component_bbox(&s_mask);
+    let dark = screen_bbox
+        .map(|bb| is_dark_theme(&gray, &mask, bb))
+        .unwrap_or(false);
     let gray_blur = gaussian_blur_f32(&gray, 1.5);
     let edges_base = canny(&gray, 50.0, 150.0);
     let edges_lo = canny(&gray, 40.0, 120.0);
@@ -925,8 +1023,19 @@ pub fn detect_slide(img: &RgbImage, ignore_mask: Option<&GrayImage>) -> Detectio
     for q in contour_candidates(&gray, &mask, &edges_base) {
         raw.push((q, "contour"));
     }
-    for q in hough_candidates(&gray, &mask, None) {
+    for q in hough_candidates(&gray, &mask, None, None) {
         raw.push((q, "hough"));
+    }
+    // ダークテーマ時: 投影領域マスク/ bbox からも全スライド候補を生成してマージ
+    if dark {
+        if let Some(bb) = screen_bbox {
+            for q in hough_candidates(&gray, &mask, None, Some(bb)) {
+                raw.push((q, "hough"));
+            }
+        }
+        for q in contour_candidates(&gray, &s_mask, &edges_base) {
+            raw.push((q, "contour"));
+        }
     }
     if let Some(q) = min_area_rect_of(&mask) {
         raw.push((q, "minrect"));
@@ -945,7 +1054,7 @@ pub fn detect_slide(img: &RgbImage, ignore_mask: Option<&GrayImage>) -> Detectio
         }) {
             raw.push((q, "contour"));
         }
-        for q in hough_candidates(&gray, &mask, Some(ig)) {
+        for q in hough_candidates(&gray, &mask, Some(ig), None) {
             raw.push((q, "hough"));
         }
     }
@@ -953,7 +1062,7 @@ pub fn detect_slide(img: &RgbImage, ignore_mask: Option<&GrayImage>) -> Detectio
     // 候補は work 座標で保持し、選択後に上辺リファインを掛けてから元解像度へ戻す。
     let mut best: Option<Cand> = None;
     for (q, method) in raw {
-        if let Some((mut score, parts)) = score_quad(&q, w, h, &gray, &mask_filled, &edges_dil, &gray_blur) {
+        if let Some((mut score, parts)) = score_quad(&q, w, h, &gray, &mask_filled, &edges_dil, &gray_blur, dark, &s_mask) {
             if method == "minrect" {
                 score *= 0.6;
             }
@@ -1000,5 +1109,60 @@ pub fn detect_slide(img: &RgbImage, ignore_mask: Option<&GrayImage>) -> Detectio
             method: "none".to_string(),
             parts: None,
         },
+    }
+}
+
+#[cfg(test)]
+mod dark_tests {
+    use super::*;
+    use image::{GrayImage, Luma};
+
+    // 準黒背景(値8)の中央に暗グレー(値55)の矩形 = 投影面を模す
+    fn synth_dark() -> GrayImage {
+        let mut g = GrayImage::from_pixel(400, 300, Luma([8]));
+        for y in 60..240 { for x in 80..320 { g.put_pixel(x, y, Luma([55])); } }
+        // 内部の明るい要素(値230)
+        for y in 100..160 { for x in 120..200 { g.put_pixel(x, y, Luma([230])); } }
+        g
+    }
+
+    #[test]
+    fn screen_mask_captures_whole_projection() {
+        let g = synth_dark();
+        let m = screen_mask(&g);
+        let bb = largest_component_bbox(&m).expect("bbox");
+        // 投影面(80..320, 60..240)にほぼ一致（close の膨張で数px外れは許容）
+        assert!(bb.0 <= 85 && bb.1 <= 65 && bb.2 >= 315 && bb.3 >= 235,
+                "bbox too small: {:?}", bb);
+        // 上限も確認: 近黒の暗幕を除外できている（bbox が全フレームを飲み込んでいない）こと。
+        // 投影面は x[80,320) y[60,240)。モルフォロジの膨張を考慮しても十分な余裕を持たせる。
+        assert!(bb.0 >= 40 && bb.1 >= 30 && bb.2 <= 360 && bb.3 <= 280,
+                "bbox swallowed the near-black drape (should exclude background): {:?}", bb);
+    }
+
+    #[test]
+    fn largest_component_bbox_none_on_empty() {
+        let m = GrayImage::from_pixel(10, 10, Luma([0]));
+        assert!(largest_component_bbox(&m).is_none());
+    }
+
+    #[test]
+    fn dark_theme_true_for_dark_slide() {
+        let g = synth_dark();
+        let bright = brightness_mask(&g);
+        let sm = screen_mask(&g);
+        let bb = largest_component_bbox(&sm).unwrap();
+        assert!(is_dark_theme(&g, &bright, bb), "dark slide should be dark theme");
+    }
+
+    #[test]
+    fn dark_theme_false_for_bright_slide() {
+        // 全面が明るい(値210)スライド = 明るいテーマ
+        let mut g = image::GrayImage::from_pixel(400, 300, image::Luma([12]));
+        for y in 50..250 { for x in 70..330 { g.put_pixel(x, y, image::Luma([210])); } }
+        let bright = brightness_mask(&g);
+        let sm = screen_mask(&g);
+        let bb = largest_component_bbox(&sm).unwrap();
+        assert!(!is_dark_theme(&g, &bright, bb), "bright slide must not be dark theme");
     }
 }

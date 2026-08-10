@@ -3,16 +3,19 @@
 
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use std::io::Cursor;
 use std::path::Path;
 
 use serde::Serialize;
 
-#[derive(Serialize)]
+#[derive(Clone)]
 pub struct Item {
     pub id: usize,
     pub name: String,
-    pub src: String,
-    pub out: Option<String>,
+    pub src: String,             // 拡大用: out_dir からの相対パス（URLエンコード前）
+    pub out: Option<String>,     // 同上（処理後）
+    pub src_abs: std::path::PathBuf, // サムネ生成元（絶対）
+    pub out_abs: Option<std::path::PathBuf>,
     pub status: String,
     pub confidence: f64,
     pub method: String,
@@ -21,8 +24,23 @@ pub struct Item {
 }
 
 #[derive(Serialize)]
-struct Data {
-    items: Vec<Item>,
+struct SerItem {
+    id: usize,
+    name: String,
+    src: String,
+    out: Option<String>,
+    src_thumb: Option<String>,
+    out_thumb: Option<String>,
+    status: String,
+    confidence: f64,
+    method: String,
+    message: String,
+    parts: serde_json::Value,
+}
+
+#[derive(Serialize)]
+struct SerData {
+    items: Vec<SerItem>,
     project: String,
     gen: String,
 }
@@ -33,8 +51,24 @@ pub fn write_report(items: Vec<Item>, out_dir: &Path) -> std::io::Result<std::pa
         format!("{}:{}:{}:{}", it.name, it.confidence, it.method, it.status).hash(&mut hasher);
     }
     let gen = format!("{:012x}", hasher.finish() & 0xffff_ffff_ffff);
-    let data = Data {
-        items,
+    let ser: Vec<SerItem> = items
+        .into_iter()
+        .map(|it| SerItem {
+            id: it.id,
+            name: it.name,
+            src: url_encode_path(&it.src),
+            out: it.out.as_ref().map(|s| url_encode_path(s)),
+            src_thumb: thumb_data_uri(&it.src_abs, 480),
+            out_thumb: it.out_abs.as_ref().and_then(|p| thumb_data_uri(p, 480)),
+            status: it.status,
+            confidence: it.confidence,
+            method: it.method,
+            message: it.message,
+            parts: it.parts,
+        })
+        .collect();
+    let data = SerData {
+        items: ser,
         project: out_dir.canonicalize().unwrap_or_else(|_| out_dir.to_path_buf()).display().to_string(),
         gen,
     };
@@ -155,7 +189,7 @@ function render(){
 }
 function makeCard(it,r){
   const card=document.createElement("div"); card.className="card";
-  const outImg=it.out?`<div class="imgwrap"><img loading="lazy" src="${it.out}" alt=""></div>`:`<p class="meta">出力なし（${it.status}）</p>`;
+  const outImg=it.out?`<div class="imgwrap"><img loading="lazy" src="${it.out_thumb||it.out}" data-full="${it.out}" alt=""></div>`:`<p class="meta">出力なし（${it.status}）</p>`;
   card.innerHTML=`
     <div class="card-head">
       <span class="idx">#${String(it.id+1).padStart(2,"0")}</span>
@@ -165,7 +199,7 @@ function makeCard(it,r){
       <span class="sp"></span><span class="saved" data-saved="${it.id}">保存しました</span>
     </div>
     <div class="body">
-      <div class="imgcol"><h3>元画像</h3><div class="imgwrap"><img loading="lazy" src="${it.src}" alt=""></div></div>
+      <div class="imgcol"><h3>元画像</h3><div class="imgwrap"><img loading="lazy" src="${it.src_thumb||""}" data-full="${it.src}" alt=""></div></div>
       <div class="imgcol"><h3>処理後</h3>${outImg}</div>
       <div class="eval">
         <div class="meta">手法: <code>${esc(it.method||"-")}</code> / 信頼度: <code>${it.confidence}</code>${it.message?`<br>備考: ${esc(it.message)}`:""}${it.parts&&Object.keys(it.parts).length?`<br><span style="font-size:11px">${fmtParts(it.parts)}</span>`:""}</div>
@@ -174,7 +208,7 @@ function makeCard(it,r){
         <textarea data-comment="${it.id}" placeholder="例: 上端がクリップ / 色が青い / 傾き残り など">${esc(r.comment||"")}</textarea></div>
       </div>
     </div>`;
-  card.querySelectorAll(".imgwrap img").forEach(img=>img.addEventListener("click",()=>{const z=document.getElementById("zoom");document.getElementById("zoomimg").src=img.src;z.showModal();}));
+  card.querySelectorAll(".imgwrap img").forEach(img=>img.addEventListener("click",()=>{const z=document.getElementById("zoom");document.getElementById("zoomimg").src=img.dataset.full||img.src;z.showModal();}));
   card.querySelectorAll("[data-rate]").forEach(btn=>btn.addEventListener("click",()=>{
     const [id,field,val]=btn.dataset.rate.split("|"); const rr=rec(id);
     const nv=(val==="na")?"na":+val; rr[field]=(rr[field]===nv)?null:nv; saveStore(); flash(id);
@@ -245,6 +279,16 @@ fn url_encode_path(s: &str) -> String {
     out
 }
 
+fn thumb_data_uri(abs: &std::path::Path, max_side: u32) -> Option<String> {
+    let img = image::open(abs).ok()?;
+    let thumb = img.resize(max_side, max_side, image::imageops::FilterType::Triangle);
+    let rgb = thumb.to_rgb8();
+    let mut buf: Vec<u8> = Vec::new();
+    let mut enc = image::codecs::jpeg::JpegEncoder::new_with_quality(Cursor::new(&mut buf), 70);
+    enc.encode_image(&rgb).ok()?;
+    Some(format!("data:image/jpeg;base64,{}", base64_encode(&buf)))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -265,5 +309,24 @@ mod tests {
         assert_eq!(url_encode_path("2026-08-04 09.15.43.jpg"), "2026-08-04%2009.15.43.jpg");
         assert_eq!(url_encode_path("../a b/c.jpg"), "../a%20b/c.jpg");
         assert_eq!(url_encode_path("plain_file-1.0~x.jpg"), "plain_file-1.0~x.jpg");
+    }
+
+    #[test]
+    fn thumb_data_uri_from_temp_png() {
+        use image::{RgbImage, Rgb};
+        let mut img = RgbImage::new(1200, 900);
+        for p in img.pixels_mut() { *p = Rgb([10, 20, 200]); }
+        let dir = std::env::temp_dir();
+        let path = dir.join("slidewarp_thumb_test.png");
+        img.save(&path).unwrap();
+        // resize は縦横比を保持する（正方形化しない）ことを保証する回帰ガード。
+        let resized = image::open(&path).unwrap().resize(480, 480, image::imageops::FilterType::Triangle);
+        assert_eq!((resized.width(), resized.height()), (480, 360),
+                   "resize must preserve aspect ratio (long edge=480), got {}x{}", resized.width(), resized.height());
+        let uri = thumb_data_uri(&path, 480).expect("some uri");
+        assert!(uri.starts_with("data:image/jpeg;base64,"));
+        assert!(uri.len() > 200, "uri too short: {}", uri.len());
+        assert!(thumb_data_uri(std::path::Path::new("/no/such/file.png"), 480).is_none());
+        let _ = std::fs::remove_file(&path);
     }
 }

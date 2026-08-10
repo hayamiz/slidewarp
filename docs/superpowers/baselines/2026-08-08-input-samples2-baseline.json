@@ -1,0 +1,2012 @@
+{
+"2026-08-04 08.33.37.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.905
+},
+"2026-08-04 08.34.07.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.9
+},
+"2026-08-04 08.35.03.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.833
+},
+"2026-08-04 08.36.33.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.943
+},
+"2026-08-04 08.36.46.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.944
+},
+"2026-08-04 08.41.25.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.911
+},
+"2026-08-04 08.53.57.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.878
+},
+"2026-08-04 08.55.18.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.892
+},
+"2026-08-04 08.56.35.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.882
+},
+"2026-08-04 08.57.14.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.895
+},
+"2026-08-04 08.57.41.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.897
+},
+"2026-08-04 08.59.17.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.888
+},
+"2026-08-04 08.59.57.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.888
+},
+"2026-08-04 09.01.29.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.898
+},
+"2026-08-04 09.02.51.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.884
+},
+"2026-08-04 09.11.20.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.98
+},
+"2026-08-04 09.11.38.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.959
+},
+"2026-08-04 09.13.56.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.905
+},
+"2026-08-04 09.15.43.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.956
+},
+"2026-08-04 09.17.28.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.949
+},
+"2026-08-04 09.18.25.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.977
+},
+"2026-08-04 09.19.57.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.944
+},
+"2026-08-04 09.28.57.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.831
+},
+"2026-08-04 09.29.56.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.853
+},
+"2026-08-04 09.31.42.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.927
+},
+"2026-08-04 09.32.10.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.946
+},
+"2026-08-04 09.33.41.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.83
+},
+"2026-08-04 09.35.10.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.853
+},
+"2026-08-04 09.35.29.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.848
+},
+"2026-08-04 09.36.34.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.859
+},
+"2026-08-04 09.43.32.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.936
+},
+"2026-08-04 09.44.05.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.911
+},
+"2026-08-04 09.47.40.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.919
+},
+"2026-08-04 09.48.45.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.972
+},
+"2026-08-04 09.50.10.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.911
+},
+"2026-08-04 09.51.46.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.883
+},
+"2026-08-04 09.53.02.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.912
+},
+"2026-08-04 09.54.08.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.902
+},
+"2026-08-04 09.55.32.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.89
+},
+"2026-08-04 09.56.36.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.93
+},
+"2026-08-04 10.00.35.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.939
+},
+"2026-08-04 10.02.28.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.906
+},
+"2026-08-04 10.06.16.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.858
+},
+"2026-08-04 10.06.56.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.922
+},
+"2026-08-04 10.08.32.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.903
+},
+"2026-08-04 10.10.34.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.898
+},
+"2026-08-04 10.13.51.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.898
+},
+"2026-08-04 10.14.47.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.922
+},
+"2026-08-04 10.18.04.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.885
+},
+"2026-08-04 10.18.25.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.878
+},
+"2026-08-04 10.20.09.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.957
+},
+"2026-08-04 10.20.55.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.936
+},
+"2026-08-04 10.32.56.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.85
+},
+"2026-08-04 10.35.07.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.839
+},
+"2026-08-04 10.37.41.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.924
+},
+"2026-08-04 10.38.16.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.899
+},
+"2026-08-04 10.38.33.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.938
+},
+"2026-08-04 10.40.40.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.881
+},
+"2026-08-04 10.43.25.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.89
+},
+"2026-08-04 10.44.40.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.964
+},
+"2026-08-04 10.44.52.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.954
+},
+"2026-08-04 10.46.50.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.839
+},
+"2026-08-04 10.48.29.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.881
+},
+"2026-08-04 10.48.41.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.837
+},
+"2026-08-04 11.11.23.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.863
+},
+"2026-08-04 11.13.32.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.874
+},
+"2026-08-04 11.20.13.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.775
+},
+"2026-08-04 11.24.33.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.886
+},
+"2026-08-04 11.25.06.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.905
+},
+"2026-08-04 11.25.40.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.717
+},
+"2026-08-04 11.26.36.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.784
+},
+"2026-08-04 11.28.09.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.79
+},
+"2026-08-04 11.30.00.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.837
+},
+"2026-08-04 11.32.14.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.818
+},
+"2026-08-04 11.33.28.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.678
+},
+"2026-08-04 11.33.51.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.737
+},
+"2026-08-04 11.34.37.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.71
+},
+"2026-08-04 11.35.23.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.717
+},
+"2026-08-04 11.36.46.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.727
+},
+"2026-08-04 11.37.35.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.775
+},
+"2026-08-04 11.37.51.jpg": {
+"status": "ok",
+"method": "minrect",
+"confidence": 0.445
+},
+"2026-08-04 11.40.09.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.874
+},
+"2026-08-04 11.40.55.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.732
+},
+"2026-08-04 11.44.33.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.581
+},
+"2026-08-04 11.45.28.jpg": {
+"status": "ok",
+"method": "minrect",
+"confidence": 0.391
+},
+"2026-08-04 11.46.51.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.596
+},
+"2026-08-04 11.46.59.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.577
+},
+"2026-08-04 11.47.25.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.609
+},
+"2026-08-04 11.47.45.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.584
+},
+"2026-08-04 11.47.56.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.662
+},
+"2026-08-04 11.49.05.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.548
+},
+"2026-08-04 11.49.14.jpg": {
+"status": "no_detection",
+"method": "none",
+"confidence": 0.0
+},
+"2026-08-04 11.49.21.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.585
+},
+"2026-08-04 11.50.00.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.696
+},
+"2026-08-04 11.50.34.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.882
+},
+"2026-08-04 11.52.56.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.556
+},
+"2026-08-04 11.54.08.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.726
+},
+"2026-08-04 11.55.15.jpg": {
+"status": "ok",
+"method": "minrect",
+"confidence": 0.411
+},
+"2026-08-04 11.56.26.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.608
+},
+"2026-08-04 11.57.33.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.816
+},
+"2026-08-04 11.57.44.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.655
+},
+"2026-08-04 11.57.58.jpg": {
+"status": "ok",
+"method": "minrect",
+"confidence": 0.427
+},
+"2026-08-04 11.58.51.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.772
+},
+"2026-08-04 11.59.19.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.653
+},
+"2026-08-04 12.00.01.jpg": {
+"status": "ok",
+"method": "minrect",
+"confidence": 0.431
+},
+"2026-08-04 12.00.18.jpg": {
+"status": "ok",
+"method": "minrect",
+"confidence": 0.429
+},
+"2026-08-04 12.01.09.jpg": {
+"status": "no_detection",
+"method": "none",
+"confidence": 0.0
+},
+"2026-08-04 12.01.28.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.802
+},
+"2026-08-04 12.02.32.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.626
+},
+"2026-08-04 12.03.08.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.806
+},
+"2026-08-04 12.03.22.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.764
+},
+"2026-08-04 12.03.27.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.821
+},
+"2026-08-04 12.03.39.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.601
+},
+"2026-08-04 12.03.54.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.654
+},
+"2026-08-04 12.03.58.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.631
+},
+"2026-08-04 12.04.46.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.807
+},
+"2026-08-04 12.05.41.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.591
+},
+"2026-08-04 12.06.22.jpg": {
+"status": "ok",
+"method": "minrect",
+"confidence": 0.412
+},
+"2026-08-04 12.07.17.jpg": {
+"status": "ok",
+"method": "minrect",
+"confidence": 0.408
+},
+"2026-08-04 12.08.46.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.758
+},
+"2026-08-04 12.09.27.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.837
+},
+"2026-08-04 12.09.53.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.833
+},
+"2026-08-04 12.10.12.jpg": {
+"status": "ok",
+"method": "minrect",
+"confidence": 0.418
+},
+"2026-08-04 12.11.01.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.594
+},
+"2026-08-04 12.11.42.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.567
+},
+"2026-08-04 12.12.40.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.923
+},
+"2026-08-04 12.13.21.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.761
+},
+"2026-08-04 12.13.49.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.756
+},
+"2026-08-04 12.14.02.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.798
+},
+"2026-08-04 12.14.44.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.5
+},
+"2026-08-04 12.15.43.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.699
+},
+"2026-08-04 12.17.14.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.804
+},
+"2026-08-04 12.18.25.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.417
+},
+"2026-08-04 12.18.42.jpg": {
+"status": "ok",
+"method": "minrect",
+"confidence": 0.395
+},
+"2026-08-04 12.18.44.jpg": {
+"status": "ok",
+"method": "minrect",
+"confidence": 0.395
+},
+"2026-08-04 12.19.14.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.911
+},
+"2026-08-04 13.20.31.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.916
+},
+"2026-08-04 13.20.49.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.783
+},
+"2026-08-04 13.21.20.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.821
+},
+"2026-08-04 13.22.53.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.904
+},
+"2026-08-04 13.23.18.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.836
+},
+"2026-08-04 13.24.03.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.763
+},
+"2026-08-04 13.25.02.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.806
+},
+"2026-08-04 13.25.56.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.8
+},
+"2026-08-04 13.28.08.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.899
+},
+"2026-08-04 13.29.01.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.841
+},
+"2026-08-04 13.29.33.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.889
+},
+"2026-08-04 13.31.20.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.786
+},
+"2026-08-04 13.32.07.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.846
+},
+"2026-08-04 13.33.05.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.814
+},
+"2026-08-04 13.33.44.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.805
+},
+"2026-08-04 13.35.27.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.853
+},
+"2026-08-04 13.36.06.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.761
+},
+"2026-08-04 13.37.09.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.811
+},
+"2026-08-04 13.37.37.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.826
+},
+"2026-08-04 13.38.34.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.845
+},
+"2026-08-04 13.38.55.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.877
+},
+"2026-08-04 13.39.28.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.802
+},
+"2026-08-04 13.40.16.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.849
+},
+"2026-08-04 13.40.35.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.743
+},
+"2026-08-04 13.41.12.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.745
+},
+"2026-08-04 13.42.08.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.767
+},
+"2026-08-04 13.42.26.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.796
+},
+"2026-08-04 13.45.14.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.783
+},
+"2026-08-04 13.48.23.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.935
+},
+"2026-08-04 13.49.25.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.953
+},
+"2026-08-04 13.51.16.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.953
+},
+"2026-08-04 13.52.54.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.947
+},
+"2026-08-04 13.53.20.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.951
+},
+"2026-08-04 13.54.15.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.954
+},
+"2026-08-04 13.54.56.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.91
+},
+"2026-08-04 13.55.10.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.905
+},
+"2026-08-04 13.57.16.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.896
+},
+"2026-08-04 13.58.37.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.747
+},
+"2026-08-04 13.59.48.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.876
+},
+"2026-08-04 14.00.44.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.851
+},
+"2026-08-04 14.03.15.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.894
+},
+"2026-08-04 14.05.35.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.892
+},
+"2026-08-04 14.06.05.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.954
+},
+"2026-08-04 14.07.20.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.954
+},
+"2026-08-04 14.09.04.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.953
+},
+"2026-08-04 14.10.16.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.82
+},
+"2026-08-04 14.11.07.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.915
+},
+"2026-08-04 14.14.14.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.951
+},
+"2026-08-04 14.19.37.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.977
+},
+"2026-08-04 14.21.45.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.788
+},
+"2026-08-04 14.21.51.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.853
+},
+"2026-08-04 14.22.34.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.749
+},
+"2026-08-04 14.27.07.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.719
+},
+"2026-08-04 14.28.32.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.856
+},
+"2026-08-04 14.29.34.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.816
+},
+"2026-08-04 14.32.10.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.878
+},
+"2026-08-04 14.34.10.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.846
+},
+"2026-08-04 14.47.32.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.908
+},
+"2026-08-04 14.48.50.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.866
+},
+"2026-08-04 14.51.01.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.701
+},
+"2026-08-04 14.51.40.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.775
+},
+"2026-08-04 14.52.24.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.908
+},
+"2026-08-04 14.59.07.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.651
+},
+"2026-08-04 15.04.46.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.631
+},
+"2026-08-04 15.06.37.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.803
+},
+"2026-08-04 15.08.39.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.717
+},
+"2026-08-04 15.10.43.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.869
+},
+"2026-08-04 15.12.13.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.765
+},
+"2026-08-04 15.13.34.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.82
+},
+"2026-08-04 15.16.21.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.896
+},
+"2026-08-04 16.14.18.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.83
+},
+"2026-08-04 16.14.24.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.813
+},
+"2026-08-04 16.14.30.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.815
+},
+"2026-08-05 10.09.03.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.899
+},
+"2026-08-05 10.09.14.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.917
+},
+"2026-08-05 10.10.00.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.937
+},
+"2026-08-05 10.11.15.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.911
+},
+"2026-08-05 10.11.34.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.943
+},
+"2026-08-05 10.13.13.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.9
+},
+"2026-08-05 10.13.36.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.839
+},
+"2026-08-05 10.19.42.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.862
+},
+"2026-08-05 10.20.27.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.831
+},
+"2026-08-05 10.22.10.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.702
+},
+"2026-08-05 10.22.59.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.921
+},
+"2026-08-05 10.24.43.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.906
+},
+"2026-08-05 10.39.52.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.94
+},
+"2026-08-05 10.40.43.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.892
+},
+"2026-08-05 10.41.31.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.906
+},
+"2026-08-05 10.42.47.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.836
+},
+"2026-08-05 10.43.57.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.848
+},
+"2026-08-05 10.45.54.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.834
+},
+"2026-08-05 10.47.34.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.894
+},
+"2026-08-05 11.03.12.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.779
+},
+"2026-08-05 11.06.26.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.812
+},
+"2026-08-05 11.06.29.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.793
+},
+"2026-08-05 11.06.43.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.807
+},
+"2026-08-05 11.08.28.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.907
+},
+"2026-08-05 11.09.31.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.841
+},
+"2026-08-05 11.10.14.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.747
+},
+"2026-08-05 11.11.20.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.804
+},
+"2026-08-05 11.13.12.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.776
+},
+"2026-08-05 11.13.37.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.877
+},
+"2026-08-05 11.14.09.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.882
+},
+"2026-08-05 11.15.23.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.909
+},
+"2026-08-05 11.15.51.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.72
+},
+"2026-08-05 11.17.44.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.907
+},
+"2026-08-05 11.18.00.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.763
+},
+"2026-08-05 11.18.31.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.914
+},
+"2026-08-05 11.19.13.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.905
+},
+"2026-08-05 11.19.43.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.917
+},
+"2026-08-05 11.20.00.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.908
+},
+"2026-08-05 11.20.25.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.785
+},
+"2026-08-05 11.20.48.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.9
+},
+"2026-08-05 11.22.46.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.922
+},
+"2026-08-05 11.22.59.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.919
+},
+"2026-08-05 11.24.04.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.886
+},
+"2026-08-05 11.25.20.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.887
+},
+"2026-08-05 11.26.18.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.78
+},
+"2026-08-05 11.26.51.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.883
+},
+"2026-08-05 11.34.00.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.829
+},
+"2026-08-05 11.34.02.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.895
+},
+"2026-08-05 11.35.19.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.804
+},
+"2026-08-05 11.35.29.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.79
+},
+"2026-08-05 11.35.58.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.705
+},
+"2026-08-05 11.36.23.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.846
+},
+"2026-08-05 11.37.12.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.762
+},
+"2026-08-05 11.37.59.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.65
+},
+"2026-08-05 11.38.50.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.703
+},
+"2026-08-05 11.39.29.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.705
+},
+"2026-08-05 11.42.20.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.744
+},
+"2026-08-05 11.43.17.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.79
+},
+"2026-08-05 11.44.12.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.643
+},
+"2026-08-05 11.48.04.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.812
+},
+"2026-08-05 11.50.10.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.757
+},
+"2026-08-05 11.50.44.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.778
+},
+"2026-08-05 11.51.41.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.674
+},
+"2026-08-05 11.54.32.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.826
+},
+"2026-08-05 11.57.37.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.714
+},
+"2026-08-05 11.57.56.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.789
+},
+"2026-08-05 11.59.10.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.714
+},
+"2026-08-05 11.59.54.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.813
+},
+"2026-08-05 12.00.49.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.809
+},
+"2026-08-05 12.01.14.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.803
+},
+"2026-08-05 12.02.50.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.837
+},
+"2026-08-05 12.04.50.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.827
+},
+"2026-08-05 12.05.57.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.814
+},
+"2026-08-05 12.08.40.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.821
+},
+"2026-08-05 12.09.48.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.719
+},
+"2026-08-05 12.11.10.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.671
+},
+"2026-08-05 14.19.56.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.834
+},
+"2026-08-05 14.21.09.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.845
+},
+"2026-08-05 14.23.30.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.836
+},
+"2026-08-05 14.26.12.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.806
+},
+"2026-08-05 14.38.56.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.8
+},
+"2026-08-05 14.40.22.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.894
+},
+"2026-08-05 14.43.50.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.905
+},
+"2026-08-05 14.48.31.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.953
+},
+"2026-08-05 14.49.57.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.867
+},
+"2026-08-05 14.51.33.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.85
+},
+"2026-08-05 14.52.18.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.832
+},
+"2026-08-05 14.53.43.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.846
+},
+"2026-08-05 14.57.23.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.913
+},
+"2026-08-05 14.58.06.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.817
+},
+"2026-08-05 14.59.41.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.803
+},
+"2026-08-05 15.01.03.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.836
+},
+"2026-08-05 15.06.33.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.772
+},
+"2026-08-05 15.09.47.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.821
+},
+"2026-08-05 15.14.10.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.834
+},
+"2026-08-05 15.15.41.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.787
+},
+"2026-08-05 15.17.14.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.875
+},
+"2026-08-05 15.35.26.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.874
+},
+"2026-08-05 15.36.27.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.884
+},
+"2026-08-05 15.38.32.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.838
+},
+"2026-08-05 15.40.21.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.888
+},
+"2026-08-05 15.44.50.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.825
+},
+"2026-08-05 15.45.16.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.877
+},
+"2026-08-05 15.45.55.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.918
+},
+"2026-08-05 15.46.26.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.81
+},
+"2026-08-05 15.46.56.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.873
+},
+"2026-08-05 15.52.43.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.931
+},
+"2026-08-05 15.53.43.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.944
+},
+"2026-08-05 15.55.03.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.886
+},
+"2026-08-05 15.56.15.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.911
+},
+"2026-08-05 15.57.18.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.911
+},
+"2026-08-05 15.58.01.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.93
+},
+"2026-08-05 15.59.21.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.93
+},
+"2026-08-05 15.59.54.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.902
+},
+"2026-08-05 16.06.57.jpg": {
+"status": "ok",
+"method": "minrect",
+"confidence": 0.417
+},
+"2026-08-05 16.07.30.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.881
+},
+"2026-08-05 16.09.32.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.93
+},
+"2026-08-05 16.11.23.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.814
+},
+"2026-08-05 16.13.44.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.803
+},
+"2026-08-05 16.16.08.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.926
+},
+"2026-08-05 16.18.48.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.8
+},
+"2026-08-05 16.22.52.jpg": {
+"status": "ok",
+"method": "minrect",
+"confidence": 0.357
+},
+"2026-08-05 16.23.35.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.933
+},
+"2026-08-05 16.24.15.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.894
+},
+"2026-08-05 16.25.24.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.932
+},
+"2026-08-05 16.25.59.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.942
+},
+"2026-08-05 16.26.46.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.929
+},
+"2026-08-05 16.27.21.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.881
+},
+"2026-08-05 16.29.06.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.875
+},
+"2026-08-05 16.29.17.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.849
+},
+"2026-08-05 16.30.33.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.887
+},
+"2026-08-05 16.31.35.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.854
+},
+"2026-08-05 16.32.50.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.934
+},
+"2026-08-06 08.37.09.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.921
+},
+"2026-08-06 08.38.37.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.91
+},
+"2026-08-06 08.39.04.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.911
+},
+"2026-08-06 08.39.18.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.896
+},
+"2026-08-06 08.39.42.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.929
+},
+"2026-08-06 08.40.25.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.896
+},
+"2026-08-06 08.41.35.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.934
+},
+"2026-08-06 08.43.44.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.927
+},
+"2026-08-06 08.45.42.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.899
+},
+"2026-08-06 08.46.44.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.906
+},
+"2026-08-06 08.55.07.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.888
+},
+"2026-08-06 09.26.43.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.763
+},
+"2026-08-06 09.26.56.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.837
+},
+"2026-08-06 09.28.17.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.929
+},
+"2026-08-06 09.29.25.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.824
+},
+"2026-08-06 09.32.09.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.908
+},
+"2026-08-06 09.32.51.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.921
+},
+"2026-08-06 09.33.44.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.812
+},
+"2026-08-06 09.34.54.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.9
+},
+"2026-08-06 09.48.43.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.869
+},
+"2026-08-06 09.49.14.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.758
+},
+"2026-08-06 09.51.56.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.809
+},
+"2026-08-06 09.57.59.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.927
+},
+"2026-08-06 10.05.43.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.76
+},
+"2026-08-06 10.07.17.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.813
+},
+"2026-08-06 10.07.39.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.912
+},
+"2026-08-06 10.08.46.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.891
+},
+"2026-08-06 10.09.11.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.915
+},
+"2026-08-06 10.09.50.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.863
+},
+"2026-08-06 10.11.40.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.859
+},
+"2026-08-06 10.14.19.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.892
+},
+"2026-08-06 10.14.28.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.863
+},
+"2026-08-06 10.35.21.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.835
+},
+"2026-08-06 10.39.21.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.948
+},
+"2026-08-06 10.53.07.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.926
+},
+"2026-08-06 10.54.48.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.791
+},
+"2026-08-06 15.30.42.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.864
+},
+"2026-08-06 15.31.15.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.82
+},
+"2026-08-06 15.33.02.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.848
+},
+"2026-08-06 15.36.03.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.823
+},
+"2026-08-06 15.36.48.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.924
+},
+"2026-08-06 15.38.21.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.952
+},
+"2026-08-06 15.39.44.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.878
+},
+"2026-08-06 15.44.05.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.86
+},
+"2026-08-06 15.44.53.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.864
+},
+"2026-08-06 15.44.56.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.837
+},
+"2026-08-06 15.46.56.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.857
+},
+"2026-08-06 15.47.24.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.835
+},
+"2026-08-06 15.50.20.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.845
+},
+"2026-08-06 15.50.33.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.828
+},
+"2026-08-06 15.51.03.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.833
+},
+"2026-08-06 15.51.52.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.922
+},
+"2026-08-06 15.54.46.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.919
+},
+"2026-08-06 15.56.49.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.867
+},
+"2026-08-06 16.00.00.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.885
+},
+"2026-08-06 16.02.16.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.882
+},
+"2026-08-06 16.05.20.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.846
+},
+"2026-08-06 16.07.50.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.856
+},
+"2026-08-06 16.08.55.jpg": {
+"status": "ok",
+"method": "hough",
+"confidence": 0.859
+},
+"2026-08-06 16.10.03.jpg": {
+"status": "ok",
+"method": "contour",
+"confidence": 0.841
+}
+}
