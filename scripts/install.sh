@@ -209,11 +209,10 @@ main() {
 	info ""
 	info "インストール完了: ${install_dir}/slidewarp"
 
-	# 軽い疎通確認（失敗しても致命的にはしない）。slidewarp は --version を持たず
-	# --help を持つので --help で確認する。実行不能なら警告のみ。
+	# 軽い疎通確認（失敗しても致命的にはしない）。--version で起動確認する。
 	if [ -x "${install_dir}/slidewarp" ]; then
-		if "${install_dir}/slidewarp" --help >/dev/null 2>&1; then
-			info "  動作確認: slidewarp --help OK"
+		if ver=$("${install_dir}/slidewarp" --version 2>/dev/null); then
+			info "  動作確認: ${ver} OK"
 		else
 			info "  注意: ${install_dir}/slidewarp の起動確認に失敗しました（配置は完了）。"
 		fi

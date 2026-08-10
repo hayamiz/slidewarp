@@ -13,8 +13,11 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 use std::path::{Path, PathBuf};
 
+use std::io::IsTerminal;
+
 use clap::Parser;
 use image::RgbImage;
+use indicatif::{ParallelProgressIterator, ProgressBar, ProgressStyle};
 use rayon::prelude::*;
 use walkdir::WalkDir;
 
@@ -34,7 +37,7 @@ fn load_oriented(path: &Path) -> anyhow::Result<RgbImage> {
 }
 
 #[derive(Parser)]
-#[command(name = "slidewarp", about = "学会撮影スライド写真を検出・台形補正・シャープ化する（純Rust版）")]
+#[command(name = "slidewarp", version, about = "学会撮影スライド写真を検出・台形補正・シャープ化する（純Rust版）")]
 struct Args {
     /// 写真ファイル または フォルダ（再帰探索）
     inputs: Vec<PathBuf>,
@@ -315,7 +318,28 @@ fn main() {
     let jobs = if args.jobs > 0 { args.jobs } else { rayon::current_num_threads() };
     println!("対象 {} 枚 / 並列 {}", files.len(), jobs);
 
-    let results: Vec<ProcResult> = files.par_iter().map(|f| process_image(f, &args, &out_dir)).collect();
+    // 処理中の進捗（spinner・処理済み/全体・ETA）。TTY でないときは表示しない
+    // （パイプ/リダイレクト時に制御文字を混ぜないため）。
+    let pb = if std::io::stderr().is_terminal() {
+        let pb = ProgressBar::new(files.len() as u64);
+        pb.set_style(
+            ProgressStyle::with_template(
+                "{spinner:.green} {pos}/{len} ({percent}%) [{bar:25.cyan/blue}] 残り {eta}",
+            )
+            .unwrap()
+            .progress_chars("=>-"),
+        );
+        pb.enable_steady_tick(std::time::Duration::from_millis(120));
+        pb
+    } else {
+        ProgressBar::hidden()
+    };
+    let results: Vec<ProcResult> = files
+        .par_iter()
+        .progress_with(pb.clone())
+        .map(|f| process_image(f, &args, &out_dir))
+        .collect();
+    pb.finish_and_clear();
     for r in &results {
         log(r);
     }

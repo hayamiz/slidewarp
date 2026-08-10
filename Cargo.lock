@@ -1094,6 +1094,7 @@ dependencies = [
  "console",
  "number_prefix",
  "portable-atomic",
+ "rayon",
  "unicode-width",
  "web-time",
 ]
@@ -2221,6 +2222,7 @@ dependencies = [
  "clap",
  "image",
  "imageproc",
+ "indicatif",
  "mimalloc",
  "rayon",
  "self_update",
